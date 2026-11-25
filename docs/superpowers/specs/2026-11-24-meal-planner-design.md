@@ -5,13 +5,13 @@ Status: Approved by owner 2026-11-24
 
 ## 1. Intent
 
-Joe finds recipes on TikTok and Instagram. Today, turning one of those videos
+The user finds recipes on TikTok and Instagram. Today, turning one of those videos
 into a grocery list is manual. Meal Planner removes that work:
 
 1. Paste (or share) a TikTok/Instagram link.
 2. The app pulls the recipe name and ingredients out of the post.
-3. Joe reviews and corrects the ingredients, then saves the recipe.
-4. Each week Joe picks which saved meals to make.
+3. The user reviews and corrects the ingredients, then saves the recipe.
+4. Each week the user picks which saved meals to make.
 5. The app combines the ingredients of those meals into one grocery list.
 6. One tap copies the list so it can be pasted into iPhone Notes.
 
@@ -30,7 +30,7 @@ without grocery-store integration.
 - The weekly list combines duplicates sensibly ("1 onion" + "½ onion" →
   "1½ onion") and is grouped by store section.
 - The list pastes cleanly into iPhone Notes.
-- Runs on Joe's Raspberry Pi 3 B+ (1GB RAM) next to Pi-hole without hurting it.
+- Runs on the user's Raspberry Pi 3 B+ (1GB RAM) next to Pi-hole without hurting it.
 - Running cost is a few cents per recipe at most.
 
 **Non-goals (for now)**
@@ -43,13 +43,13 @@ without grocery-store integration.
 - Meal calendar by day. The plan is "this week's meals," not Monday/Tuesday slots.
 
 **Anti-goals (failure even if it "works")**
-- Saving ingredients Joe didn't see. Every extracted recipe goes through
+- Saving ingredients the user didn't see. Every extracted recipe goes through
   the review screen before it is saved.
 - Slowing down or destabilising Pi-hole (DNS for the whole house).
 - Silent failure: if extraction can't find a recipe, the user is told and can
   paste the caption/ingredients by hand instead.
 - Fiddly maintenance. Routine breakage (e.g. yt-dlp falling behind TikTok)
-  should be fixed by an automatic update, not by Joe SSH-ing in.
+  should be fixed by an automatic update, not by the user SSH-ing in.
 
 ## 3. Constraints
 
@@ -194,7 +194,7 @@ form; the user can edit it on the review screen.
 
 One recipe per post in v1 (Claude's call, not the owner's): if a post holds
 several recipes (e.g. "3 meal-prep ideas"), Claude extracts the first/main one
-and adds a warning naming the others, so Joe can paste their text in
+and adds a warning naming the others, so the user can paste their text in
 separately. Splitting one post into several recipes can come later.
 
 Fractions become decimals ("½" → 0.5). "Salt to taste" → quantity null,
@@ -233,7 +233,7 @@ In Notes, select all → tap the checklist button to turn it into a checklist.
 **Clipboard caveat:** `navigator.clipboard` only works over HTTPS. On plain
 LAN HTTP, fall back to selecting a hidden textarea + `document.execCommand
 ('copy')`, and as a last resort show the text in a box with "Select all" so
-Joe can copy manually. With Tailscale HTTPS the modern API works.
+the user can copy manually. With Tailscale HTTPS the modern API works.
 
 ### 6.7 Sharing from TikTok/Instagram on iPhone
 
@@ -245,7 +245,7 @@ immediately (after login, if needed).
 ### 6.8 Login
 
 - One password, set in config (`APP_PASSWORD`). Login page sets a long-lived
-  signed session cookie (~1 year), so Joe logs in once per device.
+  signed session cookie (~1 year), so the user logs in once per device.
 - Keep auth in one place (a dependency/middleware) so real accounts can
   replace it later.
 
@@ -260,7 +260,14 @@ immediately (after login, if needed).
 - A weekly systemd timer upgrades yt-dlp in the virtualenv and restarts the
   service (TikTok/Instagram changes break yt-dlp often).
 - An `install.sh` that sets up the venv, service, and timer on a fresh Pi;
-  an `update.sh` that pulls the latest code and restarts.
+  an `update.sh` that deploys a release tag (`vX.Y.Z` on `main`), backs up the
+  database first, checks `/health`, and rolls back to the previous release if
+  the check fails.
+- Releases deploy themselves: a systemd timer on the Pi checks GitHub every
+  15 minutes and runs `update.sh` for a new tag. The Pi pulls; GitHub holds no
+  deploy secrets and can't reach the Pi. A tag that failed is not retried
+  automatically. (Chosen over GitHub Actions deploying through Tailscale/SSH
+  or a self-hosted runner, because the repo is public.)
 - Nightly backup: copy the SQLite file to a dated file in `DATA_DIR/backups`,
   keep the last 14.
 - Optional final step (documented): Tailscale on the Pi and iPhone,
