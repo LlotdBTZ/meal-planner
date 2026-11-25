@@ -3,12 +3,30 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1F4E99">
   <title>{% block title %}Meal Planner{% endblock %}</title>
   <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/app.js" defer></script>
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
   <main class="page">
     {% block content %}{% endblock %}
   </main>
+  {% block nav %}
+  <nav class="tabs" aria-label="Main">
+    <a href="/" {% if path == "/" or path.startswith("/recipe") %}aria-current="page"{% endif %}>
+      <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h10"/></svg>
+      Recipes
+    </a>
+    <a href="/add" {% if path.startswith("/add") or path.startswith("/review") %}aria-current="page"{% endif %}>
+      <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+      Add
+    </a>
+    <a href="/week" {% if path.startswith("/week") %}aria-current="page"{% endif %}>
+      <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 7h14l-1.5 12h-11zM9 7a3 3 0 0 1 6 0"/></svg>
+      This week{% if week_count %} <span class="badge" data-week-count>{{ week_count }}</span>{% endif %}
+    </a>
+  </nav>
+  {% endblock %}
 </body>
 </html>

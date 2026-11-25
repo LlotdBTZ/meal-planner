@@ -1,14 +1,16 @@
 {% extends "base.html" %}
 {% block title %}Log in · Meal Planner{% endblock %}
+{% block body_class %}bare{% endblock %}
+{% block nav %}{% endblock %}
 {% block content %}
 <section class="login">
   <h1>Meal Planner</h1>
-  <form method="post" action="/login">
+  <form method="post" action="/login" class="stack">
     <input type="hidden" name="next" value="{{ next }}">
     <label for="password">Password</label>
     <input id="password" name="password" type="password" autocomplete="current-password" required autofocus>
     {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
-    <button type="submit">Log in</button>
+    <button type="submit" class="primary">Log in</button>
   </form>
 </section>
 {% endblock %}
