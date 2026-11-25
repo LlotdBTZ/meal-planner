@@ -168,7 +168,9 @@ backups. If they're lost, recipes still work but show no picture.
 ## Development
 
 ```bash
-python3 -m venv .venv && .venv/bin/pip install -e '.[dev]'
+python3 -m venv .venv
+.venv/bin/pip install --require-hashes -r requirements.txt   # locked runtime deps
+.venv/bin/pip install -e '.[dev]'                            # app + dev tools
 cp .env.example .env               # set APP_PASSWORD and SESSION_SECRET at least
 .venv/bin/python -m app.main       # http://localhost:8080
 .venv/bin/pytest -q                # tests never touch the network or need API keys

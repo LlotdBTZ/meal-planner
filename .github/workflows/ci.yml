@@ -29,7 +29,16 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
+      # Runtime deps exactly as the Pi gets them, then dev tools (and yt-dlp) on top.
+      - run: pip install --require-hashes -r requirements.txt
       - run: pip install -e '.[dev]'
+      - name: Lock file matches pyproject.toml
+        if: matrix.python-version == '3.11'
+        run: |
+          uv pip compile pyproject.toml --universal --python-version 3.11 --generate-hashes \
+            --no-emit-package yt-dlp -o requirements.txt -q
+          git diff --exit-code requirements.txt \
+            || { echo "::error::requirements.txt is out of date: run the lock command in CLAUDE.md"; exit 1; }
       - run: ruff check .
       - run: ruff format --check .
       - run: mypy

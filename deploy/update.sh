@@ -21,6 +21,10 @@ ENV_FILE=/etc/meal-planner/.env
 SKIP_FILE=$PREFIX/skipped-tags  # tags auto-deploy won't touch
 KEEP_RELEASES=3
 
+# Ignore /etc/pip.conf: Raspberry Pi OS adds piwheels there, whose rebuilt wheels
+# don't match the PyPI hashes in requirements.txt.
+export PIP_CONFIG_FILE=/dev/null
+
 die() { echo "error: $*" >&2; exit 1; }
 log() { echo "==> $*"; }
 
@@ -92,8 +96,17 @@ fi
 # Called inside 'if', where set -e is off, so every step checks for failure itself.
 activate() {  # point current at a release, install its dependencies, restart
     log "Installing dependencies for $(basename "$1")"
-    "$PREFIX/venv/bin/pip" install --quiet --upgrade pip || return 1
-    "$PREFIX/venv/bin/pip" install --quiet -e "$1" || return 1
+    local pip=$PREFIX/venv/bin/pip
+    "$pip" install --quiet --upgrade pip || return 1
+    if [[ -f $1/requirements.txt ]]; then
+        # Exactly the versions CI tested, checked against their hashes.
+        "$pip" install --quiet --require-hashes -r "$1/requirements.txt" || return 1
+        "$pip" install --quiet --no-deps -e "$1" || return 1
+        # yt-dlp isn't locked: the weekly timer keeps it current. Install only if missing.
+        "$pip" install --quiet yt-dlp || return 1
+    else
+        "$pip" install --quiet -e "$1" || return 1  # releases before the lock file
+    fi
     ln -sfn "$1" "$PREFIX/current.new" || return 1
     mv -T "$PREFIX/current.new" "$PREFIX/current" || return 1
     log "Restarting"
