@@ -190,8 +190,8 @@ cp .env.example .env               # set APP_PASSWORD and SESSION_SECRET at leas
 3. CI publishes a GitHub Release from the CHANGELOG, and the Pi deploys the tag within ~15
    minutes.
 
-This repo is public: never commit secrets. CI scans every change with gitleaks and GitHub
-blocks pushes containing known key formats. How we work (branches, commits, PRs, releases)
+This repo is public: never commit secrets. CI scans every change with gitleaks, audits the locked
+dependencies with pip-audit, and GitHub blocks pushes containing known key formats. How we work (branches, commits, PRs, releases)
 is in [CLAUDE.md](CLAUDE.md). GitHub
 repository settings are managed with Terraform in [infra/github/](infra/github/).
 

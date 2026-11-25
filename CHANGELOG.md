@@ -5,6 +5,11 @@ All notable changes to this project are noted here. Versions follow
 
 ## [Unreleased]
 
+### Security
+
+- CI audits the locked runtime dependencies with pip-audit on every PR and push, and
+  weekly to catch newly published advisories. It's a required check on `main`.
+
 ## [0.3.0] - 2026-11-24
 
 ### Added
