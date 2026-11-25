@@ -109,3 +109,17 @@ def test_api_errors_become_friendly_errors(error, message):
 
 def test_source_is_wrapped_and_trimmed():
     assert build_user_message("  hi \n") == "<source>\nhi\n</source>"
+
+
+def test_missing_credentials_become_friendly_error():
+    client, _ = fake_client(
+        error=TypeError('"Could not resolve authentication method. Expected one of api_key"')
+    )
+    with pytest.raises(ExtractionError, match="ANTHROPIC_API_KEY"):
+        ClaudeExtractor("", client=client).extract("caption")
+
+
+def test_other_type_errors_are_not_hidden():
+    client, _ = fake_client(error=TypeError("unexpected keyword"))
+    with pytest.raises(TypeError):
+        ClaudeExtractor("k", client=client).extract("caption")

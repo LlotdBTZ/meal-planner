@@ -83,6 +83,13 @@ class ClaudeExtractor:
             )
         except anthropic.AuthenticationError as e:
             raise ExtractionError("The Claude API key is missing or invalid.") from e
+        except TypeError as e:
+            # The SDK raises TypeError when no credentials are configured at all.
+            if "authentication" not in str(e).lower():
+                raise
+            raise ExtractionError(
+                "The Claude API key isn't set (ANTHROPIC_API_KEY in .env)."
+            ) from e
         except anthropic.RateLimitError as e:
             raise ExtractionError("Claude is busy right now. Try again in a minute.") from e
         except anthropic.APIConnectionError as e:
