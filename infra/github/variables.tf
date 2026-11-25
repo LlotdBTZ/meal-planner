@@ -11,9 +11,9 @@ variable "repo_name" {
 }
 
 variable "visibility" {
-  description = "public or private."
+  description = "public or private. Public: keep secrets out (CI runs gitleaks; push protection is on)."
   type        = string
-  default     = "private"
+  default     = "public"
 
   validation {
     condition     = contains(["public", "private"], var.visibility)
@@ -24,13 +24,13 @@ variable "visibility" {
 variable "enable_branch_protection" {
   description = "Protect main (requires a public repo, or GitHub Pro for private repos)."
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "required_checks" {
   description = "CI check names that must pass before merging to main."
   type        = list(string)
-  default     = ["test (3.11)", "test (3.13)", "terraform"]
+  default     = ["test (3.11)", "test (3.13)", "shellcheck", "terraform", "gitleaks"]
 }
 
 variable "labels" {

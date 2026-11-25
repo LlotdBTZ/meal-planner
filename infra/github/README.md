@@ -21,39 +21,46 @@ single machine on a home network.
    export GITHUB_TOKEN=github_pat_...
    ```
 
-## Create the repo and push the code
+## Bring the existing repo under Terraform
+
+The repo was created with `gh` (same settings as `main.tf`), so import it
+rather than create it. Run once, with `GITHUB_TOKEN` exported:
 
 ```bash
 cd infra/github
 terraform init
-terraform plan
+terraform import github_repository.meal_planner meal-planner
+terraform import github_repository_dependabot_security_updates.meal_planner meal-planner
+terraform import 'github_branch_protection.main[0]' meal-planner:main
+for label in "type: feature" "type: bug" "type: chore" "type: docs" \
+             "area: extract" "area: list" "area: deploy"; do
+  terraform import "github_issue_label.labels[\"$label\"]" "meal-planner:$label"
+done
+terraform plan    # should show few or no changes; review before applying
 terraform apply
-
-cd ../..
-git remote add origin "$(terraform -chdir=infra/github output -raw clone_url_https)"
-git push -u origin main
 ```
 
-**If the repo already exists** (e.g. it was published from VS Code), import it
-instead of creating it:
+If `plan` wants to create something that already exists, import that too.
 
-```bash
-terraform -chdir=infra/github import github_repository.meal_planner meal-planner
-terraform -chdir=infra/github apply
-```
+## Public repo and secrets
+
+The repo is **public**. Secrets must never be committed (see `CLAUDE.md`):
+
+- GitHub **secret scanning push protection** rejects pushes containing known
+  key formats.
+- CI runs **gitleaks** on every PR and push, and over the whole history weekly.
+- Real secrets live only in `/etc/meal-planner/.env` on the Pi. GitHub Actions
+  holds no deploy secrets: the Pi pulls releases itself.
+
+If a secret is ever pushed: **rotate it first** (removing it from history is
+not enough once it was public), then clean up.
 
 ## Branch protection
 
-`enable_branch_protection` defaults to `false`, because GitHub only allows
-branch protection on **private** repos for paid plans. To turn it on, either
-make the repo public or upgrade to GitHub Pro, then:
-
-```bash
-terraform apply -var enable_branch_protection=true
-```
-
-Apply it only *after* CI has run once on GitHub, so the required check names
-(`test (3.11)`, `test (3.13)`, `terraform`) exist.
+On (free for public repos): `main` needs a PR, linear history, and green
+`test (3.11)`, `test (3.13)`, `shellcheck`, `terraform`, and `gitleaks`
+checks. `enforce_admins = false` keeps an owner bypass for emergencies.
+If you rename a CI job, update `required_checks` in the same PR.
 
 ## State
 

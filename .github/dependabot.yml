@@ -1,0 +1,26 @@
+# Dependency bumps arrive as their own PRs (see CLAUDE.md).
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    labels: ["type: chore"]
+    commit-message:
+      prefix: ci
+    groups:
+      actions:
+        patterns: ["*"]
+
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
+    labels: ["type: chore"]
+    commit-message:
+      prefix: chore
+    # Minimums are only raised when needed; security updates still come through.
+    versioning-strategy: increase-if-necessary
+    ignore:
+      # Auto-updates weekly on the Pi instead (deploy/meal-planner-ytdlp-update.timer).
+      - dependency-name: yt-dlp
