@@ -36,6 +36,13 @@ apt-get install -y -qq python3 python3-venv git curl >/dev/null
 python3 -c 'import sys; sys.exit(sys.version_info < (3, 11))' \
     || die "Python 3.11+ is required (found $(python3 --version))"
 
+# MemoryMax only works with the kernel's memory controller. Raspberry Pi kernels
+# disable it by default, which would let the app starve Pi-hole.
+memory_cgroup=1
+if ! grep -qw memory /sys/fs/cgroup/cgroup.controllers 2>/dev/null; then
+    memory_cgroup=0
+fi
+
 echo "==> Creating the $APP_USER user and directories"
 if ! id "$APP_USER" >/dev/null 2>&1; then
     useradd --system --home-dir "$DATA_DIR" --no-create-home \
@@ -66,6 +73,19 @@ TIMERS=(meal-planner-backup.timer meal-planner-ytdlp-update.timer meal-planner-a
 systemctl daemon-reload
 systemctl enable meal-planner.service "${TIMERS[@]}"
 systemctl start "${TIMERS[@]}"
+
+if [[ $memory_cgroup == 0 ]]; then
+    cmdline=/boot/firmware/cmdline.txt
+    [[ -f $cmdline ]] || cmdline=/boot/cmdline.txt
+    cat <<EOF
+
+WARNING: the kernel's memory controller is off, so the app's 300 MB memory cap
+is NOT enforced. To turn it on, add cgroup_enable=memory to the end of the single
+line in $cmdline and reboot:
+
+    sudo sed -i '1 s/\$/ cgroup_enable=memory/' $cmdline && sudo reboot
+EOF
+fi
 
 if [[ ${created_env:-0} == 1 ]]; then
     cat <<EOF

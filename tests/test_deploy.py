@@ -59,3 +59,9 @@ def test_only_the_autodeploy_unit_has_a_placeholder():
     for unit in UNIT_FILES:
         if unit.name != "meal-planner-autodeploy.service":
             assert "@" not in unit.read_text(), unit.name
+
+
+def test_install_warns_when_memory_limits_cannot_work():
+    text = (DEPLOY / "install.sh").read_text()
+    assert "/sys/fs/cgroup/cgroup.controllers" in text
+    assert "cgroup_enable=memory" in text

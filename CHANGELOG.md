@@ -5,6 +5,12 @@ All notable changes to this project are noted here. Versions follow
 
 ## [Unreleased]
 
+### Added
+
+- MIT license, a security policy with private vulnerability reporting, and issue templates.
+- `install.sh` warns when the kernel's memory controller is off (the default on Raspberry
+  Pi), since the app's memory cap can't work without it.
+
 ### Fixed
 
 - Login redirects refuse targets containing control characters; browsers drop tabs and
