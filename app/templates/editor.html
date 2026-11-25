@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}{{ "Check the recipe" if mode == "review" else "Edit " ~ recipe.name }} · Meal Planner{% endblock %}
+{% block content %}
+<header class="page-head">
+  <h1>{{ "Check the recipe" if mode == "review" else "Edit recipe" }}</h1>
+  {% if mode == "review" %}<p class="lede">Fix anything that's wrong, then save.</p>{% endif %}
+</header>
+
+{% if errors %}
+<div class="notice error" role="alert">
+  <ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
+</div>
+{% endif %}
+{% if warnings %}
+<div class="notice">
+  <ul>{% for w in warnings %}<li>{{ w }}</li>{% endfor %}</ul>
+</div>
+{% endif %}
+
+<form method="post" action="{{ action }}" class="editor" data-editor>
+  {% if mode == "review" %}
+  <input type="hidden" name="source_url" value="{{ recipe.source_url or '' }}">
+  <input type="hidden" name="platform" value="{{ recipe.platform or '' }}">
+  <input type="hidden" name="thumbnail_path" value="{{ recipe.thumbnail_path or '' }}">
+  {% for s in recipe.steps or [] %}<input type="hidden" name="step" value="{{ s }}">{% endfor %}
+  {% endif %}
+
+  <div class="field-row">
+    <label class="grow">Name
+      <input name="name" value="{{ recipe.name }}" required maxlength="200">
+    </label>
+    <label class="narrow">Serves
+      <input name="servings" value="{{ recipe.servings or '' }}" inputmode="numeric" pattern="[0-9]*" maxlength="3">
+    </label>
+  </div>
+
+  <fieldset>
+    <legend>Ingredients</legend>
+    <ol class="ingredients" data-rows>
+      {% for ing in recipe.ingredients %}
+      {% include "_ingredient_row.html" %}
+      {% endfor %}
+    </ol>
+    <template data-row-template>
+      {% with ing=None %}{% include "_ingredient_row.html" %}{% endwith %}
+    </template>
+    <button type="button" class="quiet" data-add-row>Add an ingredient</button>
+  </fieldset>
+
+  <label>Notes
+    <textarea name="notes" rows="2">{{ recipe.notes or '' }}</textarea>
+  </label>
+
+  <div class="actions">
+    <button type="submit" class="primary">{{ "Save recipe" if mode == "review" else "Save changes" }}</button>
+    <a href="{{ '/add' if mode == 'review' else '/recipe/' ~ recipe.id }}" class="button quiet">Cancel</a>
+  </div>
+</form>
+{% endblock %}

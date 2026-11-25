@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}This week · Meal Planner{% endblock %}
+{% block content %}
+<header class="page-head">
+  <h1>This week</h1>
+</header>
+
+{% if meals %}
+<ul class="meals">
+  {% for m in meals %}
+  <li>
+    <a href="/recipe/{{ m.id }}">{{ m.name }}</a>
+    <form method="post" action="/week/remove/{{ m.id }}?next=/week">
+      <button type="submit" class="remove" aria-label="Remove {{ m.name }} from this week">
+        <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M7 7l10 10M17 7L7 17"/></svg>
+      </button>
+    </form>
+  </li>
+  {% endfor %}
+</ul>
+
+<h2 class="list-head">Grocery list</h2>
+<p class="hint">Tick what you already have. It won't be copied.</p>
+
+{% for section, lines in sections.items() %}
+<section class="aisle">
+  <h3>{{ section }}</h3>
+  <ul>
+    {% for line in lines %}
+    {% set have = line.key in checked %}
+    <li>
+      <form method="post" action="/week/check?next=/week" data-check>
+        <input type="hidden" name="item_key" value="{{ line.key }}">
+        <button type="submit" name="checked" value="{{ '' if have else '1' }}" role="checkbox" aria-checked="{{ 'true' if have else 'false' }}" class="check">
+          <span class="box" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 12.5l4 4L18 8"/></svg></span>
+          <span class="line">{{ line.text }}</span>
+        </button>
+      </form>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endfor %}
+
+<div class="copy-bar">
+  <textarea class="visually-hidden" data-notes-text readonly aria-hidden="true" tabindex="-1">{{ notes_text }}</textarea>
+  <button type="button" class="primary wide" data-copy>Copy list</button>
+  <p class="toast" data-toast role="status" hidden></p>
+</div>
+
+<form method="post" action="/week/clear?next=/week" data-confirm="Clear this week's meals and ticks? Your saved recipes stay." class="clear-week">
+  <button type="submit" class="quiet wide">Clear week</button>
+</form>
+{% else %}
+<div class="empty">
+  <p>No meals picked yet. Tap the circle on a recipe to add it to this week.</p>
+  <a href="/" class="button primary">Choose recipes</a>
+</div>
+{% endif %}
+{% endblock %}

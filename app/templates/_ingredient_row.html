@@ -1,0 +1,16 @@
+<li class="ing-row">
+  <input name="qty" value="{{ ing.quantity|qty_input if ing else '' }}" aria-label="Amount" placeholder="Amt" inputmode="decimal" class="qty">
+  <input name="unit" value="{{ ing.unit or '' if ing else '' }}" aria-label="Unit" placeholder="Unit" class="unit">
+  <input name="item" value="{{ ing.item if ing else '' }}" aria-label="Ingredient" placeholder="Ingredient" class="item">
+  <input name="note" value="{{ ing.note or '' if ing else '' }}" aria-label="Note" placeholder="Note (diced, optional…)" class="note">
+  <select name="section" aria-label="Store section" class="section">
+    {% for s in SECTIONS %}<option {% if (ing.section if ing else 'Other') == s %}selected{% endif %}>{{ s }}</option>{% endfor %}
+  </select>
+  <input type="hidden" name="raw" value="{{ ing.raw_text or '' if ing else '' }}">
+  <button type="button" class="remove" data-remove-row aria-label="Remove ingredient">
+    <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M7 7l10 10M17 7L7 17"/></svg>
+  </button>
+  {% if ing and ing.raw_text and ing.raw_text|lower != (ing|ingredient_line)|lower %}
+  <p class="raw">Originally: {{ ing.raw_text }}</p>
+  {% endif %}
+</li>

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Add a recipe · Meal Planner{% endblock %}
+{% block content %}
+<header class="page-head">
+  <h1>Add a recipe</h1>
+</header>
+
+<form class="stack" data-add-form {% if autostart %}data-autostart{% endif %}>
+  <label for="source">Paste a link, or the recipe itself</label>
+  <textarea id="source" name="source" rows="4" required
+            placeholder="https://www.tiktok.com/@…">{{ source }}</textarea>
+  <button type="submit" class="primary">Get recipe</button>
+</form>
+
+<section class="progress" data-progress hidden aria-live="polite">
+  <span class="spinner" aria-hidden="true"></span>
+  <p data-stage>Starting…</p>
+  <p class="hint">Videos can take up to a minute.</p>
+</section>
+
+<p class="error" role="alert" data-error hidden></p>
+
+<noscript><p class="error">Adding recipes needs JavaScript turned on.</p></noscript>
+{% endblock %}
