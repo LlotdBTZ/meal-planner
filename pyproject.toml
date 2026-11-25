@@ -1,6 +1,6 @@
 [project]
 name = "meal-planner"
-version = "0.3.0"
+version = "0.3.1"
 description = "Save recipes from social media links, plan the week, copy a grocery list."
 requires-python = ">=3.11"
 license = "MIT"
