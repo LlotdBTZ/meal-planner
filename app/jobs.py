@@ -87,8 +87,10 @@ def get_job(conn: sqlite3.Connection, job_id: int) -> Job | None:
 def _update(conn: sqlite3.Connection, job_id: int, **fields: str | None) -> None:
     fields["updated_at"] = _now()
     assignments = ", ".join(f"{k} = ?" for k in fields)
+    # Column names come from this module's own keyword arguments, never user input.
     conn.execute(
-        f"UPDATE extraction_jobs SET {assignments} WHERE id = ?", (*fields.values(), job_id)
+        f"UPDATE extraction_jobs SET {assignments} WHERE id = ?",  # noqa: S608
+        (*fields.values(), job_id),
     )
 
 
@@ -130,6 +132,9 @@ class JobWorker:
         if self._thread:
             self._queue.put(None)
             self._thread.join(timeout)
+        if self._conn is not None and not self.is_alive():
+            self._conn.close()
+            self._conn = None
 
     def is_alive(self) -> bool:
         return bool(self._thread and self._thread.is_alive())

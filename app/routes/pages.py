@@ -83,7 +83,8 @@ def recipe_edit(request: Request, conn: Db, recipe_id: int) -> Response:
 @router.post("/recipe/{recipe_id}/edit")
 async def recipe_edit_save(request: Request, conn: Db, recipe_id: int) -> Response:
     existing = _recipe_or_404(conn, recipe_id)
-    result = parse_editor_form(await request.form())
+    async with request.form() as form:  # closes any uploaded files
+        result = parse_editor_form(form)
     # source details aren't editable; keep what was saved
     result.recipe.source_url = existing.source_url
     result.recipe.platform = existing.platform
@@ -157,7 +158,8 @@ def review(request: Request, conn: Db, job_id: int) -> Response:
 
 @router.post("/review/{job_id}")
 async def review_save(request: Request, conn: Db, job_id: int) -> Response:
-    result = parse_editor_form(await request.form())
+    async with request.form() as form:  # closes any uploaded files
+        result = parse_editor_form(form)
     if result.errors:
         return render(
             request,

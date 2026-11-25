@@ -79,7 +79,8 @@ def run() -> None:
     import uvicorn
 
     settings = get_settings()
-    uvicorn.run(create_app(settings), host="0.0.0.0", port=settings.port, workers=1)
+    # Listens on the LAN on purpose (phones connect to it); the Pi's firewall limits who can.
+    uvicorn.run(create_app(settings), host="0.0.0.0", port=settings.port, workers=1)  # noqa: S104
 
 
 if __name__ == "__main__":

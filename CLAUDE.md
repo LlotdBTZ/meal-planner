@@ -20,8 +20,9 @@ pick meals for the week → combined grocery list → copy into iPhone Notes.
 
 ```bash
 python3 -m venv .venv && .venv/bin/pip install -e '.[dev]'   # setup
-.venv/bin/pytest -q                                           # tests
+.venv/bin/pytest -q --cov                                     # tests + coverage (≥95%)
 .venv/bin/ruff check . && .venv/bin/ruff format --check .     # lint + format check
+.venv/bin/mypy                                                # type check (app/)
 .venv/bin/ruff format .                                       # auto-format
 .venv/bin/python -m app.main                                  # run locally (http://localhost:8080)
 terraform -chdir=infra/github fmt -check && terraform -chdir=infra/github validate
@@ -60,14 +61,17 @@ terraform -chdir=infra/github fmt -check && terraform -chdir=infra/github valida
 - Every change lands through a PR into `main`, squash-merged.
 - PR description: what and why, link to the plan task / issue, how it was
   tested, screenshots for UI changes, and any follow-ups.
-- CI must be green (tests, lint, format, shellcheck, terraform validate,
-  gitleaks) before merge; branch protection on `main` enforces it.
+- CI must be green (tests + coverage, lint, format, mypy, shellcheck,
+  terraform validate, gitleaks; CodeQL reviewed) before merge; branch
+  protection on `main` enforces it.
+- Security lint (`ruff` `S` rules) applies to `app/`. A `# noqa: S…` needs a
+  comment saying why it's safe.
 - Review the diff yourself before asking for review; for non-trivial
   changes, request a code review (e.g. `/code-review`).
 
 ### 6. Definition of done
 - Behaviour matches the design; tests cover the new behaviour and pass.
-- `ruff check` and `ruff format --check` clean.
+- `ruff check`, `ruff format --check`, and `mypy` clean; coverage stays ≥95%.
 - Docs updated (README for anything user-facing or deployment-related;
   design doc if behaviour changed).
 - No TODOs without a linked issue.

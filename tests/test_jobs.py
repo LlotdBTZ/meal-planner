@@ -172,3 +172,15 @@ def test_worker_survives_a_crashing_job(db_path, conn):
         assert jobs.get_job(conn, bad).status == "failed"
     finally:
         worker.stop()
+
+
+def test_stop_closes_the_worker_connection(tmp_path):
+    path = tmp_path / "t.db"
+    conn = db.connect(path)
+    db.migrate(conn)
+    worker = jobs.JobWorker(path, lambda source, on_stage: None)
+    worker.start()
+    worker.submit(conn, "hello")
+    worker.stop()
+    conn.close()
+    assert worker._conn is None
