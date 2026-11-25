@@ -29,16 +29,20 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
-      # Runtime deps exactly as the Pi gets them, then dev tools (and yt-dlp) on top.
-      - run: pip install --require-hashes -r requirements.txt
-      - run: pip install -e '.[dev]'
-      - name: Lock file matches pyproject.toml
+      # Hash-locked runtime + dev tools (runtime versions identical to the Pi's
+      # requirements.txt), then the app itself with the locked setuptools: no
+      # resolving and no unpinned build-time downloads.
+      - run: pip install --require-hashes -r requirements-dev.txt
+      - run: pip install --no-deps --no-build-isolation -e .
+      # The one unlocked dependency, on purpose: the Pi auto-updates yt-dlp
+      # weekly, so test against the latest release too (see CLAUDE.md).
+      - run: pip install yt-dlp
+      - name: Lock files match pyproject.toml
         if: matrix.python-version == '3.11'
         run: |
-          uv pip compile pyproject.toml --universal --python-version 3.11 --generate-hashes \
-            --no-emit-package yt-dlp -o requirements.txt -q
-          git diff --exit-code requirements.txt \
-            || { echo "::error::requirements.txt is out of date: run the lock command in CLAUDE.md"; exit 1; }
+          scripts/lock-deps.sh
+          git diff --exit-code requirements.txt requirements-dev.txt \
+            || { echo "::error::Lock files are out of date: run scripts/lock-deps.sh"; exit 1; }
       - run: ruff check .
       - run: ruff format --check .
       - run: mypy
@@ -51,7 +55,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - run: shellcheck --version && shellcheck deploy/*.sh
+      - run: shellcheck --version && shellcheck deploy/*.sh scripts/*.sh
 
   terraform:
     name: terraform
