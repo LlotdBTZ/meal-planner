@@ -1,4 +1,5 @@
 import sqlite3
+from contextlib import closing
 from datetime import date
 
 from app import backup, db
@@ -20,8 +21,8 @@ def test_backup_copies_database_to_dated_file(tmp_path):
     conn.close()
 
     assert out == tmp_path / "backups" / "meal-planner-2026-11-24.db"
-    copy = sqlite3.connect(out)
-    assert copy.execute("SELECT name FROM recipes").fetchall() == [("Tacos",)]
+    with closing(sqlite3.connect(out)) as copy:
+        assert copy.execute("SELECT name FROM recipes").fetchall() == [("Tacos",)]
 
 
 def test_backup_is_consistent_while_a_write_is_open(tmp_path):
@@ -33,7 +34,9 @@ def test_backup_is_consistent_while_a_write_is_open(tmp_path):
     out = backup.backup(tmp_path / "meal-planner.db", tmp_path / "backups", date(2026, 11, 24))
     conn.execute("ROLLBACK")
 
-    names = sqlite3.connect(out).execute("SELECT name FROM recipes").fetchall()
+    with closing(sqlite3.connect(out)) as copy:
+        names = copy.execute("SELECT name FROM recipes").fetchall()
+    conn.close()
     assert names == [("Tacos",)]
 
 

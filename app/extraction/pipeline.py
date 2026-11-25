@@ -102,7 +102,8 @@ class Pipeline:
         tmp = Path(tempfile.mkdtemp(prefix="audio-", dir=self.work_dir))
         try:
             audio = self.fetcher.download_audio(url, tmp)
-            assert self.transcriber is not None
+            if self.transcriber is None:  # callers check first; asserts vanish under -O
+                raise RuntimeError("_transcribe called without a transcriber")
             return self.transcriber.transcribe(audio)
         finally:
             shutil.rmtree(tmp, ignore_errors=True)

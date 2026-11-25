@@ -32,7 +32,8 @@ jobs:
       - run: pip install -e '.[dev]'
       - run: ruff check .
       - run: ruff format --check .
-      - run: pytest -q
+      - run: mypy
+      - run: pytest -q --cov --cov-report=term
 
   shellcheck:
     name: shellcheck

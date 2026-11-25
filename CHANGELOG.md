@@ -12,6 +12,13 @@ All notable changes to this project are noted here. Versions follow
 - The recipe editor ignores file uploads in text fields instead of failing with a server
   error.
 - The jobs API only returns error messages written for the user, never internal details.
+- The extraction worker closes its database connection on shutdown, and the editor closes
+  uploaded files after reading the form.
+
+### Changed
+
+- CI enforces type checking (mypy), a 95% test-coverage floor, and security lint (ruff `S`
+  rules). Unclosed files or connections in tests now fail the run.
 
 ## [0.2.0] - 2026-11-24
 
