@@ -1,0 +1,19 @@
+<!-- Source for the home-screen icons. Re-render the PNGs after editing:
+     for s in 180 192 512; do rsvg-convert -w $s -h $s icon.svg -o icon-$s.png; done
+     cp icon-180.png apple-touch-icon.png
+     Everything important stays inside the centre 80% (maskable safe zone). -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#1F4E99"/>
+  <circle cx="256" cy="256" r="156" fill="#16233A" opacity="0.35"/>
+  <circle cx="256" cy="256" r="150" fill="#FAFBFC"/>
+  <circle cx="256" cy="256" r="116" fill="none" stroke="#DCE5F3" stroke-width="6"/>
+  <g fill="#16233A" opacity="0.45">
+    <circle cx="178" cy="176" r="3.5"/>
+    <circle cx="341" cy="202" r="2.5"/>
+    <circle cx="318" cy="338" r="3"/>
+    <circle cx="186" cy="330" r="2.5"/>
+    <circle cx="232" cy="158" r="2"/>
+  </g>
+  <path d="M190 262l44 44l92-96" fill="none" stroke="#1F4E99" stroke-width="32"
+        stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

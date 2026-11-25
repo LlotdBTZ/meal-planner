@@ -366,3 +366,32 @@ def test_clear_week(client, conn):
 def test_static_assets(client):
     assert client.get("/static/app.js").status_code == 200
     assert client.get("/static/style.css").status_code == 200
+
+
+# --- home-screen app ----------------------------------------------------------------
+
+
+def test_manifest_and_icons_are_public(settings):
+    # iOS and Android fetch these without the session cookie.
+    with TestClient(create_app(settings, runner=no_runner), follow_redirects=False) as c:
+        resp = c.get("/static/manifest.json")
+        assert resp.status_code == 200
+        manifest = json.loads(resp.content)
+        assert manifest["start_url"] == "/" and manifest["display"] == "standalone"
+        sizes = {icon["sizes"] for icon in manifest["icons"]}
+        assert {"192x192", "512x512"} <= sizes
+        for icon in manifest["icons"]:
+            png = c.get(icon["src"])
+            assert png.status_code == 200 and png.content[:8] == b"\x89PNG\r\n\x1a\n", icon
+            assert png.headers["content-type"] == "image/png"
+        touch = c.get("/static/icons/apple-touch-icon.png")
+        assert touch.status_code == 200 and touch.content[:8] == b"\x89PNG\r\n\x1a\n"
+
+
+def test_pages_link_manifest_and_apple_tags(client):
+    for path in ["/", "/week", "/add", "/login"]:
+        body = client.get(path).text
+        assert '<link rel="manifest" href="/static/manifest.json">' in body, path
+        assert 'rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png"' in body, path
+        assert '<meta name="apple-mobile-web-app-capable" content="yes">' in body, path
+        assert '<meta name="apple-mobile-web-app-title" content="Meals">' in body, path
