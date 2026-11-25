@@ -22,6 +22,7 @@ pick meals for the week → combined grocery list → copy into iPhone Notes.
 python3 -m venv .venv && .venv/bin/pip install --require-hashes -r requirements-dev.txt \
   && .venv/bin/pip install --no-deps --no-build-isolation -e . \
   && .venv/bin/pip install yt-dlp                             # setup
+ln -sf ../../scripts/git-hooks/pre-commit .git/hooks/pre-commit  # hook: gitleaks + ruff (needs gitleaks)
 .venv/bin/pytest -q --cov                                     # tests + coverage (≥95%)
 .venv/bin/ruff check . && .venv/bin/ruff format --check .     # lint + format check
 .venv/bin/mypy                                                # type check (app/)

@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# Pre-commit hook. Install once per clone (see CLAUDE.md):
+#   ln -sf ../../scripts/git-hooks/pre-commit .git/hooks/pre-commit
+# Needs gitleaks on PATH or in ~/.local/bin, and the .venv from setup.
+# 1. gitleaks: block commits whose staged changes contain a secret. CI scans
+#    too, but by then it's pushed to a public repo and must be rotated.
+# 2. ruff: lint + format check on staged Python files, the same as CI.
+# Bypass in an emergency with `git commit --no-verify` (CI still checks).
+set -euo pipefail
+
+root=$(git rev-parse --show-toplevel)
+cd "$root"
+
+# Hooks run from editors (e.g. VS Code) may not have ~/.local/bin on PATH.
+gitleaks=$(command -v gitleaks || echo "$HOME/.local/bin/gitleaks")
+if [[ ! -x $gitleaks ]]; then
+    echo "pre-commit: gitleaks not found; install it or commit with --no-verify" >&2
+    exit 1
+fi
+
+echo "pre-commit: gitleaks (staged changes)"
+if ! "$gitleaks" git --pre-commit --staged --redact --no-banner --log-level warn; then
+    echo "pre-commit: possible secret in staged changes; commit blocked." >&2
+    echo "  Remove it (and rotate it if it was ever real). For a false positive," >&2
+    echo "  add a '# gitleaks:allow' comment on that line." >&2
+    exit 1
+fi
+
+# Staged Python files that still exist (not deletions).
+mapfile -t py < <(git diff --cached --name-only --diff-filter=ACMR -- '*.py')
+if (( ${#py[@]} )); then
+    ruff=.venv/bin/ruff
+    if [[ ! -x $ruff ]]; then
+        echo "pre-commit: $ruff not found; run the setup in CLAUDE.md" >&2
+        exit 1
+    fi
+    echo "pre-commit: ruff (${#py[@]} staged Python file(s))"
+    "$ruff" check --quiet -- "${py[@]}"
+    "$ruff" format --check --quiet -- "${py[@]}" \
+        || { echo "pre-commit: run '.venv/bin/ruff format .' and re-stage" >&2; exit 1; }
+fi

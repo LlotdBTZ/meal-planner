@@ -5,6 +5,12 @@ All notable changes to this project are noted here. Versions follow
 
 ## [Unreleased]
 
+### Added
+
+- A versioned pre-commit hook (`scripts/git-hooks/pre-commit`) that blocks commits
+  containing secrets (gitleaks) and runs ruff on staged Python files. Install it with the
+  `ln -sf` line in the README's Development section.
+
 ### Changed
 
 - Dev tools and the build backend are locked with hashes in `requirements-dev.txt`, and
