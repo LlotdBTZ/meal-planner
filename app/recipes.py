@@ -116,6 +116,8 @@ def create_recipe(conn: sqlite3.Connection, recipe: Recipe) -> int:
             {**values, "now": now},
         )
         recipe_id = cur.lastrowid
+        if recipe_id is None:  # never happens for a plain INSERT; keeps the type honest
+            raise RuntimeError("SQLite did not return the new recipe's id")
         _insert_ingredients(conn, recipe_id, recipe.ingredients)
     return recipe_id
 

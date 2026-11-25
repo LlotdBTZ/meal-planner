@@ -26,6 +26,11 @@ MAX_SOURCE_CHARS = 20_000
 GENERIC_ERROR = "Something went wrong reading this recipe. Try again, or paste the text instead."
 RESTARTED_ERROR = "The app restarted while reading this. Try again."
 
+
+class JobInputError(ValueError):
+    """Bad user input for a new job. The message is plain English, safe to show."""
+
+
 Runner = Callable[[str, Callable[[str], None]], RecipeDraft]
 
 
@@ -48,15 +53,17 @@ def _now() -> str:
 def create_job(conn: sqlite3.Connection, source: str) -> int:
     source = source.strip()
     if not source:
-        raise ValueError("Paste a link or some recipe text first.")
+        raise JobInputError("Paste a link or some recipe text first.")
     if len(source) > MAX_SOURCE_CHARS:
-        raise ValueError("That's too much text. Paste just the recipe part.")
+        raise JobInputError("That's too much text. Paste just the recipe part.")
     now = _now()
     cur = conn.execute(
         """INSERT INTO extraction_jobs (url_or_text, status, created_at, updated_at)
            VALUES (?, 'queued', ?, ?)""",
         (source, now, now),
     )
+    if cur.lastrowid is None:  # never happens for a plain INSERT; keeps the type honest
+        raise RuntimeError("SQLite did not return the new job's id")
     return cur.lastrowid
 
 

@@ -101,7 +101,7 @@ class ClaudeExtractor:
             raise ExtractionError("Claude declined to read this post. Paste the text instead.")
         if response.stop_reason == "max_tokens":
             raise ExtractionError("The recipe was too long to read in one go.")
-        text = next((b.text for b in response.content if b.type == "text"), None)
+        text = next((getattr(b, "text", None) for b in response.content if b.type == "text"), None)
         if text is None:
             raise ExtractionError("The recipe reader returned nothing. Try again.")
         try:

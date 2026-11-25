@@ -124,6 +124,11 @@ def test_too_many_failures_are_blocked(client):
         ("//evil.example", "/"),
         ("/\\evil.example", "/"),
         ("week", "/"),
+        # Browsers drop tabs/newlines in URLs, turning these into //evil.example.
+        ("/\t/evil.example", "/"),
+        ("/\n/evil.example", "/"),
+        ("/\r\n/evil.example", "/"),
+        ("/week\x00", "/"),
     ],
 )
 def test_safe_next(value, expected):

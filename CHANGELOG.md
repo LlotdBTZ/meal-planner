@@ -5,6 +5,14 @@ All notable changes to this project are noted here. Versions follow
 
 ## [Unreleased]
 
+### Fixed
+
+- Login redirects refuse targets containing control characters; browsers drop tabs and
+  newlines, so `/<tab>/evil.example` could redirect off-site.
+- The recipe editor ignores file uploads in text fields instead of failing with a server
+  error.
+- The jobs API only returns error messages written for the user, never internal details.
+
 ## [0.2.0] - 2026-11-24
 
 ### Added
