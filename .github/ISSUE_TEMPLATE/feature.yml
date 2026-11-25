@@ -1,0 +1,21 @@
+name: Feature or change
+description: Suggest new behaviour. Larger changes update the design doc first.
+labels: ["type: feature"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What should happen instead?
+    validations:
+      required: true
+  - type: textarea
+    id: design
+    attributes:
+      label: Design doc impact
+      description: Which section of docs/superpowers/specs/2026-11-24-meal-planner-design.md changes, if any?

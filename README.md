@@ -25,7 +25,12 @@ sudo nano /etc/meal-planner/.env  # fill in the keys below
 sudo deploy/update.sh             # deploy the newest release (vX.Y.Z tag on main)
 ```
 
-Open `http://<pi-address>:8080` and log in with `APP_PASSWORD`. Tip: in Pi-hole's
+Open `http://<pi-address>:8080` and log in with `APP_PASSWORD`.
+
+- **Firewall:** if the Pi runs one (nftables, ufw), allow TCP 8080 from your LAN only,
+  the same as Pi-hole's admin page. Don't forward the port on your router.
+- **Memory cap:** if `install.sh` warns that the memory controller is off, follow its
+  one-line fix and reboot; until then the 300 MB cap isn't enforced. Tip: in Pi-hole's
 **Local DNS → DNS Records**, point a name like `meals.lan` at the Pi so you don't need the IP.
 
 ### Settings (`/etc/meal-planner/.env`)
@@ -189,3 +194,7 @@ This repo is public: never commit secrets. CI scans every change with gitleaks a
 blocks pushes containing known key formats. How we work (branches, commits, PRs, releases)
 is in [CLAUDE.md](CLAUDE.md). GitHub
 repository settings are managed with Terraform in [infra/github/](infra/github/).
+
+## License
+
+[MIT](LICENSE). Security issues: see [SECURITY.md](SECURITY.md).
