@@ -52,9 +52,9 @@ After editing settings: `sudo systemctl restart meal-planner`.
 ### Updates deploy themselves
 
 Every 15 minutes the Pi checks GitHub for a new release tag (`vX.Y.Z` on `main`) and deploys
-it with `update.sh`: back up the database, install, restart, check `/health`. If the new
-release isn't healthy, the previous one is put back and that tag isn't tried again
-automatically. GitHub can't reach the Pi; the Pi only pulls.
+it with `update.sh`: back up the database, install, restart, check `/health` answers and
+reports the new version. If the new release isn't healthy, the previous one is put back and
+that tag isn't tried again automatically. GitHub can't reach the Pi; the Pi only pulls.
 
 ```bash
 curl http://<pi>:8080/health                    # {"status":"ok","version":"0.3.1"}: what's running

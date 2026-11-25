@@ -65,3 +65,13 @@ def test_install_warns_when_memory_limits_cannot_work():
     text = (DEPLOY / "install.sh").read_text()
     assert "/sys/fs/cgroup/cgroup.controllers" in text
     assert "cgroup_enable=memory" in text
+
+
+def test_update_checks_the_deployed_version_via_a_resolved_path():
+    text = (DEPLOY / "update.sh").read_text()
+    # Resolved at startup: $PREFIX/current is repointed mid-deploy, possibly at
+    # a release (before v0.5.0) that has no health-check.sh.
+    assert 'HEALTH_CHECK=$(readlink -f "$(dirname "${BASH_SOURCE[0]}")")' in text
+    assert 'healthy "$TAG"' in text
+    assert 'healthy "$(basename "$PREVIOUS")"' in text
+    assert "curl" not in text.split("healthy()", 1)[1].split("}", 1)[0]

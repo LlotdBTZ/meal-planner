@@ -5,6 +5,14 @@ All notable changes to this project are noted here. Versions follow
 
 ## [Unreleased]
 
+### Changed
+
+- Deploys check that `/health` reports the version just deployed, not just that it
+  answers, so a restart that left the old code running rolls back instead of passing.
+  Releases before 0.4.0 (which don't report a version) still only need to answer. The
+  auto-deploy timer runs the *deployed* `update.sh`, so this takes effect for deploys
+  made after the release containing it is running.
+
 ## [0.4.0] - 2026-11-24
 
 ### Added

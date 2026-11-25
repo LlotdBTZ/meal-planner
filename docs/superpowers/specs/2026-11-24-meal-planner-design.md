@@ -262,7 +262,9 @@ immediately (after login, if needed).
 - An `install.sh` that sets up the venv, service, and timer on a fresh Pi;
   an `update.sh` that deploys a release tag (`vX.Y.Z` on `main`), backs up the
   database first, checks `/health`, and rolls back to the previous release if
-  the check fails.
+  the check fails. From v0.4.0 on, the check also requires `/health` to report
+  the tag's version, so a restart that left the old code running counts as a
+  failure (`deploy/health-check.sh`).
 - `/health` needs no login and returns `{"status": "ok", "version": "X.Y.Z"}`,
   the version the running release was installed with, so a deploy (or a
   rollback) can be confirmed from any device on the LAN/tailnet without SSH.

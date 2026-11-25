@@ -7,7 +7,8 @@
 #   sudo deploy/update.sh --auto     # what the auto-deploy timer runs (see below)
 #
 # Only tags whose commit is on main are deployed. If the new release fails its
-# health check, the previous release is put back.
+# health check (deploy/health-check.sh: up, and from v0.4.0 on reporting the
+# tag's version), the previous release is put back.
 #
 # --auto: fetch tags from origin and deploy the newest one if it isn't running
 # yet. Tags that failed, or that you rolled back from by hand, are skipped until
@@ -27,6 +28,11 @@ export PIP_CONFIG_FILE=/dev/null
 
 die() { echo "error: $*" >&2; exit 1; }
 log() { echo "==> $*"; }
+
+# Resolve our own directory now: the timer runs us via $PREFIX/current, which
+# activate() repoints mid-deploy, possibly at a release without this helper.
+HEALTH_CHECK=$(readlink -f "$(dirname "${BASH_SOURCE[0]}")")/health-check.sh
+[[ -x $HEALTH_CHECK ]] || die "missing $HEALTH_CHECK"
 
 [[ $EUID -eq 0 ]] || die "run with sudo"
 
@@ -113,17 +119,13 @@ activate() {  # point current at a release, install its dependencies, restart
     systemctl restart meal-planner.service || return 1
 }
 
-healthy() {
+healthy() {  # $1: the tag that should now be running
     local port
     port=$(sed -n 's/^PORT=//p' "$ENV_FILE" 2>/dev/null | tr -d "\"' " | tail -n1)
-    for _ in $(seq 1 30); do
-        curl -fsS "http://127.0.0.1:${port:-8080}/health" >/dev/null 2>&1 && return 0
-        sleep 1
-    done
-    return 1
+    "$HEALTH_CHECK" "http://127.0.0.1:${port:-8080}/health" "$1"
 }
 
-if activate "$RELEASE" && healthy; then
+if activate "$RELEASE" && healthy "$TAG"; then
     log "$TAG is up"
     sed -i "/^${TAG//./\\.}\$/d" "$SKIP_FILE" 2>/dev/null || true
     if [[ $AUTO == 0 ]]; then
@@ -147,7 +149,7 @@ grep -qxF "$TAG" "$SKIP_FILE" 2>/dev/null || echo "$TAG" >>"$SKIP_FILE"
 
 if [[ -n $PREVIOUS && $PREVIOUS != "$RELEASE" && -d $PREVIOUS ]]; then
     log "Rolling back to $(basename "$PREVIOUS")"
-    if activate "$PREVIOUS" && healthy; then
+    if activate "$PREVIOUS" && healthy "$(basename "$PREVIOUS")"; then
         log "Rolled back; $(basename "$PREVIOUS") is up"
     else
         echo "error: rollback to $(basename "$PREVIOUS") also failed" >&2
