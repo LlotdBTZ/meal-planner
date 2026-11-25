@@ -48,4 +48,7 @@ def test_dotenv_does_not_override_existing(tmp_path, monkeypatch):
 def test_app_creates_and_migrates_database(tmp_path):
     app = create_app(get_settings({"DATA_DIR": str(tmp_path / "d")}))
     assert (tmp_path / "d" / "meal-planner.db").is_file()
-    assert app.state.db.execute("PRAGMA user_version").fetchone()[0] >= 1
+    from app import db
+
+    conn = db.connect(app.state.settings.db_path)
+    assert conn.execute("PRAGMA user_version").fetchone()[0] >= 1

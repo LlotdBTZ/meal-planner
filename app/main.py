@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 
-from app import db
+from app import db, jobs
 from app.auth import Auth, LoginRequired, login_redirect
 from app.auth import router as auth_router
 from app.config import Settings, get_settings
@@ -13,13 +16,44 @@ from app.routes import api, pages
 from app.templating import STATIC_DIR
 
 
-def create_app(settings: Settings | None = None) -> FastAPI:
+def _pipeline_runner(settings: Settings) -> jobs.Runner:
+    """Build the real pipeline lazily, on the worker thread, at the first job."""
+    pipeline = None
+
+    def run(source: str, on_stage) -> object:
+        nonlocal pipeline
+        if pipeline is None:
+            from app.extraction.pipeline import build_pipeline
+
+            pipeline = build_pipeline(settings)
+        return pipeline.run(source, on_stage)
+
+    return run
+
+
+def create_app(settings: Settings | None = None, runner: jobs.Runner | None = None) -> FastAPI:
     settings = settings or get_settings()
-    app = FastAPI(title="Meal Planner", docs_url=None, redoc_url=None, openapi_url=None)
+
+    conn = db.connect(settings.db_path)
+    db.migrate(conn)
+    jobs.recover_interrupted(conn)
+    jobs.prune_old_jobs(conn)
+    conn.close()
+
+    worker = jobs.JobWorker(settings.db_path, runner or _pipeline_runner(settings))
+    worker.start()
+
+    @asynccontextmanager
+    async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+        yield
+        worker.stop()
+
+    app = FastAPI(
+        title="Meal Planner", docs_url=None, redoc_url=None, openapi_url=None, lifespan=lifespan
+    )
     app.state.settings = settings
-    app.state.db = db.connect(settings.db_path)
-    db.migrate(app.state.db)
     app.state.auth = Auth(settings)
+    app.state.jobs = worker
 
     @app.exception_handler(LoginRequired)
     def _login_required(request: Request, exc: LoginRequired):
