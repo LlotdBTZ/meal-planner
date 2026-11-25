@@ -5,13 +5,22 @@ All notable changes to this project are noted here. Versions follow
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-24
+
 ### Added
 
 - Releases deploy themselves: the Pi checks for a new `vX.Y.Z` tag every 15 minutes,
   deploys it, and rolls back to the previous release if the health check fails.
+- `deploy/update.sh` keeps a skip list: releases that failed, and newer releases after a
+  manual rollback, aren't deployed automatically until you deploy them by hand.
 - CI for a public repo: gitleaks secret scanning, shellcheck, CodeQL, Dependabot, actions
   pinned to commit SHAs, and a release workflow that publishes GitHub Releases from this
   file.
+
+### Changed
+
+- The repository is public. Secret scanning and push protection are on, and `main` is
+  protected (PR, linear history, required checks).
 
 ## [0.1.0] - 2026-11-24
 
@@ -35,4 +44,6 @@ First release.
 - README covering setup, the iOS share-sheet Shortcut, Instagram cookies, optional
   Tailscale HTTPS, and backup and restore.
 
+[Unreleased]: https://github.com/LlotdBTZ/meal-planner/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/LlotdBTZ/meal-planner/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/LlotdBTZ/meal-planner/releases/tag/v0.1.0
