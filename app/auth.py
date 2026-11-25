@@ -32,8 +32,14 @@ class LoginRequired(Exception):
 
 
 def safe_next(value: str | None) -> str:
-    """Only allow local paths as post-login redirect targets."""
+    """Only allow local paths as post-login redirect targets.
+
+    Control characters are refused outright: browsers silently drop tabs and
+    newlines in URLs, so "/\t/evil.example" would become "//evil.example".
+    """
     if not value or not value.startswith("/") or value.startswith(("//", "/\\")):
+        return "/"
+    if any(ord(c) < 0x20 or ord(c) == 0x7F for c in value):
         return "/"
     return value
 

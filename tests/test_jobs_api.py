@@ -84,3 +84,26 @@ def test_startup_fails_jobs_interrupted_by_restart(tmp_path):
     stuck = jobs.create_job(conn, "x")
     create_app(settings, runner=runner).state.jobs.stop()
     assert jobs.get_job(conn, stuck).status == "failed"
+
+
+def test_unexpected_errors_are_not_echoed_to_the_client(tmp_path):
+    settings = get_settings(
+        {"DATA_DIR": str(tmp_path), "APP_PASSWORD": "pw", "SESSION_SECRET": "s"}
+    )
+    app = create_app(settings, runner=runner)
+    with TestClient(app, raise_server_exceptions=False) as c:
+        c.post("/login", data={"password": "pw"})
+
+        def broken_submit(conn, source):
+            raise ValueError("internal detail: /var/lib/secret-path")
+
+        app.state.jobs.submit = broken_submit
+        resp = c.post("/api/jobs", data={"source": "hello"})
+    assert resp.status_code == 500
+    assert "internal detail" not in resp.text
+
+
+def test_input_errors_are_shown_plainly(client):
+    resp = client.post("/api/jobs", data={"source": "   "})
+    assert resp.status_code == 400
+    assert resp.json()["detail"] == "Paste a link or some recipe text first."

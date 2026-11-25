@@ -27,7 +27,7 @@ def create_job(
 ) -> Any:
     try:
         job_id = request.app.state.jobs.submit(conn, source)
-    except ValueError as e:
+    except jobs.JobInputError as e:  # only messages written for the user
         return JSONResponse({"detail": str(e)}, status_code=400)
     return {"id": job_id}
 

@@ -395,3 +395,14 @@ def test_pages_link_manifest_and_apple_tags(client):
         assert 'rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png"' in body, path
         assert '<meta name="apple-mobile-web-app-capable" content="yes">' in body, path
         assert '<meta name="apple-mobile-web-app-title" content="Meals">' in body, path
+
+
+def test_edit_ignores_file_uploads_in_text_fields(client, conn):
+    # A crafted multipart form must give a normal response, not a 500.
+    rid = make_recipe(conn)
+    resp = client.post(
+        f"/recipe/{rid}/edit",
+        data=editor_form(),
+        files={"step": ("x.txt", b"boil", "text/plain"), "name": ("n.txt", b"x", "text/plain")},
+    )
+    assert resp.status_code in (303, 400)

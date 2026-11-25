@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Callable
 from contextlib import asynccontextmanager
+from typing import TYPE_CHECKING
 
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
@@ -15,12 +16,16 @@ from app.config import Settings, get_settings
 from app.routes import api, pages
 from app.templating import STATIC_DIR
 
+if TYPE_CHECKING:  # the real pipeline imports yt-dlp; load it only when a job runs
+    from app.extraction.pipeline import Pipeline
+    from app.extraction.schema import RecipeDraft
+
 
 def _pipeline_runner(settings: Settings) -> jobs.Runner:
     """Build the real pipeline lazily, on the worker thread, at the first job."""
-    pipeline = None
+    pipeline: Pipeline | None = None
 
-    def run(source: str, on_stage) -> object:
+    def run(source: str, on_stage: Callable[[str], None]) -> RecipeDraft:
         nonlocal pipeline
         if pipeline is None:
             from app.extraction.pipeline import build_pipeline

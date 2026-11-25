@@ -19,8 +19,14 @@ def safe_thumbnail(name: str | None) -> str | None:
     return name if name and _THUMBNAIL_NAME.match(name) else None
 
 
+def _strings(form: FormData, key: str) -> list[str]:
+    """All values for `key`; file uploads count as empty, so rows stay aligned."""
+    return [v if isinstance(v, str) else "" for v in form.getlist(key)]
+
+
 def _text(form: FormData, key: str, limit: int = 500) -> str | None:
-    value = " ".join(str(form.get(key) or "").split())[:limit]
+    values = _strings(form, key)
+    value = " ".join(values[-1].split())[:limit] if values else ""
     return value or None
 
 
@@ -44,14 +50,14 @@ def parse_editor_form(form: FormData) -> EditorResult:
         else:
             errors.append("Servings should be a whole number.")
 
-    columns = {k: form.getlist(k) for k in ("qty", "unit", "item", "note", "section", "raw")}
+    columns = {k: _strings(form, k) for k in ("qty", "unit", "item", "note", "section", "raw")}
     rows = max((len(v) for v in columns.values()), default=0)
     ingredients: list[Ingredient] = []
     for i in range(rows):
 
         def cell(key: str, limit: int = 200, i: int = i) -> str | None:
             values = columns[key]
-            value = " ".join(str(values[i]).split())[:limit] if i < len(values) else ""
+            value = " ".join(values[i].split())[:limit] if i < len(values) else ""
             return value or None
 
         item, qty_text = cell("item"), cell("qty", 20)
@@ -83,7 +89,7 @@ def parse_editor_form(form: FormData) -> EditorResult:
     source_url = _text(form, "source_url", 2000)
     if source_url and not source_url.startswith(("http://", "https://")):
         source_url = None
-    steps = [s for s in (" ".join(x.split()) for x in form.getlist("step")) if s]
+    steps = [s for s in (" ".join(x.split()) for x in _strings(form, "step")) if s]
 
     recipe = Recipe(
         name=name,
