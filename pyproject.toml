@@ -1,6 +1,6 @@
 [project]
 name = "meal-planner"
-version = "0.1.0"
+version = "0.2.0"
 description = "Save recipes from social media links, plan the week, copy a grocery list."
 requires-python = ">=3.11"
 dependencies = [
