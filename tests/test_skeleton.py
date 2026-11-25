@@ -22,8 +22,9 @@ def test_settings_defaults():
 
 
 def test_settings_from_env():
-    s = get_settings({"PORT": "9000", "DATA_DIR": "/var/lib/mp", "YTDLP_COOKIES": "/c.txt",
-                      "APP_PASSWORD": "pw"})
+    s = get_settings(
+        {"PORT": "9000", "DATA_DIR": "/var/lib/mp", "YTDLP_COOKIES": "/c.txt", "APP_PASSWORD": "pw"}
+    )
     assert s.port == 9000
     assert s.data_dir == Path("/var/lib/mp")
     assert s.ytdlp_cookies == Path("/c.txt")
@@ -37,5 +38,6 @@ def test_dotenv_does_not_override_existing(tmp_path, monkeypatch):
     monkeypatch.delenv("MP_TEST_A", raising=False)
     load_dotenv(env_file)
     import os
+
     assert os.environ["MP_TEST_A"] == "from file"
     assert os.environ["MP_TEST_B"] == "real"

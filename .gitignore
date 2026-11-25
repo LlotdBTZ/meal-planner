@@ -6,3 +6,11 @@ __pycache__/
 *.pyc
 .pytest_cache/
 *.egg-info/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+crash.log
+cookies.txt
