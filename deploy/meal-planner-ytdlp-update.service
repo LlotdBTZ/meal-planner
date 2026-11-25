@@ -1,0 +1,11 @@
+[Unit]
+Description=Update yt-dlp for Meal Planner and restart the app
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+# TikTok/Instagram change often; yt-dlp is the one dependency that auto-updates.
+ExecStart=/opt/meal-planner/venv/bin/pip install --quiet --upgrade yt-dlp
+ExecStartPost=/bin/systemctl try-restart meal-planner.service
+Nice=10

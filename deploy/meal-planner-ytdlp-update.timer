@@ -1,0 +1,10 @@
+[Unit]
+Description=Update yt-dlp for Meal Planner weekly
+
+[Timer]
+OnCalendar=Mon *-*-* 04:15
+RandomizedDelaySec=30min
+Persistent=true
+
+[Install]
+WantedBy=timers.target
