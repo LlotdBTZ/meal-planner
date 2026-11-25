@@ -28,6 +28,8 @@ class Settings:
     session_secret: str
     anthropic_api_key: str
     transcribe_api_key: str
+    claude_model: str
+    transcribe_model: str
     ytdlp_cookies: Path | None
     data_dir: Path
     port: int
@@ -39,6 +41,10 @@ class Settings:
     @property
     def thumbnails_dir(self) -> Path:
         return self.data_dir / "thumbnails"
+
+    @property
+    def work_dir(self) -> Path:
+        return self.data_dir / "work"
 
 
 def get_settings(env: dict[str, str] | None = None) -> Settings:
@@ -52,6 +58,8 @@ def get_settings(env: dict[str, str] | None = None) -> Settings:
         session_secret=env.get("SESSION_SECRET", ""),
         anthropic_api_key=env.get("ANTHROPIC_API_KEY", ""),
         transcribe_api_key=env.get("TRANSCRIBE_API_KEY", ""),
+        claude_model=env.get("CLAUDE_MODEL", "").strip() or "claude-opus-5-5",
+        transcribe_model=env.get("TRANSCRIBE_MODEL", "").strip() or "whisper-1",
         ytdlp_cookies=Path(cookies) if cookies else None,
         data_dir=Path(env.get("DATA_DIR", "data")),
         port=int(env.get("PORT", "8080")),

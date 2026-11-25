@@ -19,6 +19,8 @@ def test_settings_defaults():
     assert s.data_dir == Path("data")
     assert s.ytdlp_cookies is None
     assert s.db_path == Path("data/meal-planner.db")
+    assert s.claude_model == "claude-opus-5-5"
+    assert s.transcribe_model == "whisper-1"
 
 
 def test_settings_from_env():
