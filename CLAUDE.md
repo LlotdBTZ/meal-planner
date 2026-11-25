@@ -66,7 +66,7 @@ terraform -chdir=infra/github fmt -check && terraform -chdir=infra/github valida
 - PR description: what and why, link to the plan task / issue, how it was
   tested, screenshots for UI changes, and any follow-ups.
 - CI must be green (tests + coverage, lint, format, mypy, shellcheck,
-  terraform validate, gitleaks; CodeQL reviewed) before merge; branch
+  terraform validate, gitleaks, pip-audit; CodeQL reviewed) before merge; branch
   protection on `main` enforces it.
 - Security lint (`ruff` `S` rules) applies to `app/`. A `# noqa: S…` needs a
   comment saying why it's safe.
@@ -107,7 +107,8 @@ terraform -chdir=infra/github fmt -check && terraform -chdir=infra/github valida
 - Redirect targets (e.g. login `next=`) must be local paths only.
 - `pyproject.toml` holds minimum versions; `requirements.txt` locks the exact
   runtime versions (with hashes) that CI tests and the Pi installs. Change
-  them together. Review dependency bumps in their own PR.
+  them together. Review dependency bumps in their own PR. CI audits the lock
+  with pip-audit (also weekly); fix a reported vulnerability by bumping, not ignoring.
 - GitHub Actions are pinned to full commit SHAs (Dependabot bumps them).
   Workflows get read-only tokens by default; never use `pull_request_target`.
 - yt-dlp is the exception: it's left out of the lock and auto-updates weekly
