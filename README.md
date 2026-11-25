@@ -177,11 +177,16 @@ python3 -m venv .venv
 .venv/bin/pip install --require-hashes -r requirements-dev.txt   # locked deps + dev tools
 .venv/bin/pip install --no-deps --no-build-isolation -e .        # the app itself
 .venv/bin/pip install yt-dlp                                     # unlocked on purpose
+ln -sf ../../scripts/git-hooks/pre-commit .git/hooks/pre-commit  # pre-commit hook
 cp .env.example .env               # set APP_PASSWORD and SESSION_SECRET at least
 .venv/bin/python -m app.main       # http://localhost:8080
 .venv/bin/pytest -q                # tests never touch the network or need API keys
 .venv/bin/ruff check . && .venv/bin/ruff format --check .
 ```
+
+The pre-commit hook blocks commits that contain a secret ([gitleaks](https://github.com/gitleaks/gitleaks),
+which must be installed on `PATH` or in `~/.local/bin`) and runs ruff on staged Python files.
+CI runs the same checks, but a secret caught there has already been pushed to a public repo.
 
 ### Releasing
 
