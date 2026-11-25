@@ -15,6 +15,7 @@ jobs:
     name: codeql (${{ matrix.language }})
     runs-on: ubuntu-latest
     permissions:
+      actions: read # to look up this workflow run
       contents: read
       security-events: write
     strategy:
