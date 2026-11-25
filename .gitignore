@@ -17,3 +17,6 @@ htmlcov/
 *.tfvars
 crash.log
 cookies.txt
+
+# Editor
+.vscode/
