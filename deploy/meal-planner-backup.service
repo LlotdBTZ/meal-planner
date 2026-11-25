@@ -1,0 +1,17 @@
+[Unit]
+Description=Meal Planner nightly database backup
+
+[Service]
+Type=oneshot
+User=mealplanner
+Group=mealplanner
+WorkingDirectory=/opt/meal-planner/current
+Environment=MEAL_PLANNER_ENV_FILE=/etc/meal-planner/.env
+Environment=DATA_DIR=/var/lib/meal-planner
+ExecStart=/opt/meal-planner/venv/bin/python -m app.backup
+Nice=10
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+ReadWritePaths=/var/lib/meal-planner
