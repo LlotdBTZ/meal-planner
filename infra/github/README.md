@@ -51,6 +51,8 @@ The repo is **public**. Secrets must never be committed (see `CLAUDE.md`):
 - CI runs **gitleaks** on every PR and push, and over the whole history weekly.
 - CI runs **pip-audit** on the locked runtime dependencies on every PR and
   push, and weekly to catch newly published advisories.
+- CI checks the workflows themselves with **zizmor** (security: injection,
+  permissions, credentials left in checkouts) and **actionlint** (correctness).
 - Real secrets live only in `/etc/meal-planner/.env` on the Pi. GitHub Actions
   holds no deploy secrets: the Pi pulls releases itself.
 
@@ -60,8 +62,9 @@ not enough once it was public), then clean up.
 ## Branch protection
 
 On (free for public repos): `main` needs a PR, linear history, and green
-`test (3.11)`, `test (3.13)`, `shellcheck`, `terraform`, `gitleaks`, and
-`pip-audit` checks. `enforce_admins = false` keeps an owner bypass for emergencies.
+`test (3.11)`, `test (3.13)`, `shellcheck`, `terraform`, `gitleaks`,
+`pip-audit`, `zizmor`, and `actionlint` checks. `enforce_admins = false` keeps
+an owner bypass for emergencies.
 If you rename a CI job, update `required_checks` in the same PR.
 
 ## Release tags

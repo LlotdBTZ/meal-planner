@@ -66,7 +66,7 @@ terraform -chdir=infra/github fmt -check && terraform -chdir=infra/github valida
 - PR description: what and why, link to the plan task / issue, how it was
   tested, screenshots for UI changes, and any follow-ups.
 - CI must be green (tests + coverage, lint, format, mypy, shellcheck,
-  terraform validate, gitleaks, pip-audit; CodeQL reviewed) before merge; branch
+  terraform validate, gitleaks, pip-audit, zizmor, actionlint; CodeQL reviewed) before merge; branch
   protection on `main` enforces it.
 - Security lint (`ruff` `S` rules) applies to `app/`. A `# noqa: S…` needs a
   comment saying why it's safe.
@@ -113,6 +113,9 @@ terraform -chdir=infra/github fmt -check && terraform -chdir=infra/github valida
   with pip-audit (also weekly); fix a reported vulnerability by bumping, not ignoring.
 - GitHub Actions are pinned to full commit SHAs (Dependabot bumps them).
   Workflows get read-only tokens by default; never use `pull_request_target`.
+  CI lints workflows with zizmor and actionlint; a zizmor `# zizmor: ignore[...]`
+  needs a comment saying why it's safe. Dependabot waits 7 days before proposing
+  a new release (cooldown); security updates aren't delayed.
 - yt-dlp is the exception: it's left out of the lock and auto-updates weekly
   on the Pi because sites change often.
 

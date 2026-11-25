@@ -11,6 +11,10 @@ All notable changes to this project are noted here. Versions follow
   weekly to catch newly published advisories. It's a required check on `main`.
 - Release tags (`v*`) are protected by repository rulesets: once pushed they can't be
   moved or deleted, and only repo admins can create them.
+- CI checks the GitHub Actions workflows with zizmor (security) and actionlint
+  (correctness); both are required checks on `main`.
+- Dependabot waits 7 days before proposing a new dependency or action release, so a
+  compromised release is usually caught first. Security updates aren't delayed.
 
 ## [0.3.0] - 2026-11-24
 
