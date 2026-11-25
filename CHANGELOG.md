@@ -5,6 +5,8 @@ All notable changes to this project are noted here. Versions follow
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-24
+
 ### Added
 
 - `/health` reports the running version (`{"status": "ok", "version": "X.Y.Z"}`), so a
@@ -103,7 +105,8 @@ First release.
 - README covering setup, the iOS share-sheet Shortcut, Instagram cookies, optional
   Tailscale HTTPS, and backup and restore.
 
-[Unreleased]: https://github.com/LlotdBTZ/meal-planner/compare/v0.3.1...HEAD
+[Unreleased]: https://github.com/LlotdBTZ/meal-planner/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/LlotdBTZ/meal-planner/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/LlotdBTZ/meal-planner/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/LlotdBTZ/meal-planner/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/LlotdBTZ/meal-planner/compare/v0.1.0...v0.2.0
