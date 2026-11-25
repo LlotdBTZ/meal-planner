@@ -19,10 +19,14 @@ pick meals for the week → combined grocery list → copy into iPhone Notes.
 ## Commands
 
 ```bash
-python3 -m venv .venv && .venv/bin/pip install -e '.[dev]'   # setup
+python3 -m venv .venv && .venv/bin/pip install --require-hashes -r requirements.txt \
+  && .venv/bin/pip install -e '.[dev]'                        # setup
 .venv/bin/pytest -q --cov                                     # tests + coverage (≥95%)
 .venv/bin/ruff check . && .venv/bin/ruff format --check .     # lint + format check
 .venv/bin/mypy                                                # type check (app/)
+# lock runtime deps after changing pyproject.toml dependencies (add --upgrade to bump all):
+.venv/bin/uv pip compile pyproject.toml --universal --python-version 3.11 \
+  --generate-hashes --no-emit-package yt-dlp -o requirements.txt
 .venv/bin/ruff format .                                       # auto-format
 .venv/bin/python -m app.main                                  # run locally (http://localhost:8080)
 terraform -chdir=infra/github fmt -check && terraform -chdir=infra/github validate
@@ -101,11 +105,13 @@ terraform -chdir=infra/github fmt -check && terraform -chdir=infra/github valida
   `cookies.txt`, `*.tfstate`, `*.tfvars` with secrets, or API keys.
 - Validate and escape all user input; Jinja autoescape stays on.
 - Redirect targets (e.g. login `next=`) must be local paths only.
-- Pin dependency minimum versions; review dependency bumps in their own PR.
+- `pyproject.toml` holds minimum versions; `requirements.txt` locks the exact
+  runtime versions (with hashes) that CI tests and the Pi installs. Change
+  them together. Review dependency bumps in their own PR.
 - GitHub Actions are pinned to full commit SHAs (Dependabot bumps them).
   Workflows get read-only tokens by default; never use `pull_request_target`.
-- yt-dlp is the exception: it auto-updates weekly on the Pi because sites
-  change often.
+- yt-dlp is the exception: it's left out of the lock and auto-updates weekly
+  on the Pi because sites change often.
 
 ## Code conventions
 - Type hints on public functions; `from __future__ import annotations`.

@@ -19,7 +19,8 @@ updates:
     labels: ["type: chore"]
     commit-message:
       prefix: chore
-    # Minimums are only raised when needed; security updates still come through.
+    # Bumps the locked versions in requirements.txt (pyproject.toml minimums stay
+    # unless a bump needs more). CI checks the lock still matches pyproject.toml.
     versioning-strategy: increase-if-necessary
     ignore:
       # Auto-updates weekly on the Pi instead (deploy/meal-planner-ytdlp-update.timer).

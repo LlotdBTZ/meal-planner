@@ -17,6 +17,8 @@ All notable changes to this project are noted here. Versions follow
 
 ### Changed
 
+- Deploys are reproducible: `requirements.txt` locks exact runtime versions with hashes.
+  CI tests those versions and the Pi installs exactly them (yt-dlp still self-updates).
 - CI enforces type checking (mypy), a 95% test-coverage floor, and security lint (ruff `S`
   rules). Unclosed files or connections in tests now fail the run.
 
