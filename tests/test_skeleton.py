@@ -6,8 +6,8 @@ from app.config import get_settings, load_dotenv
 from app.main import create_app
 
 
-def test_health_returns_ok():
-    client = TestClient(create_app(get_settings({})))
+def test_health_returns_ok(tmp_path):
+    client = TestClient(create_app(get_settings({"DATA_DIR": str(tmp_path)})))
     resp = client.get("/health")
     assert resp.status_code == 200
     assert resp.json() == {"status": "ok"}
@@ -41,3 +41,9 @@ def test_dotenv_does_not_override_existing(tmp_path, monkeypatch):
 
     assert os.environ["MP_TEST_A"] == "from file"
     assert os.environ["MP_TEST_B"] == "real"
+
+
+def test_app_creates_and_migrates_database(tmp_path):
+    app = create_app(get_settings({"DATA_DIR": str(tmp_path / "d")}))
+    assert (tmp_path / "d" / "meal-planner.db").is_file()
+    assert app.state.db.execute("PRAGMA user_version").fetchone()[0] >= 1

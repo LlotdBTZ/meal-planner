@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from fastapi import FastAPI
 
+from app import db
 from app.config import Settings, get_settings
 
 
@@ -11,6 +12,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or get_settings()
     app = FastAPI(title="Meal Planner", docs_url=None, redoc_url=None)
     app.state.settings = settings
+    app.state.db = db.connect(settings.db_path)
+    db.migrate(app.state.db)
 
     @app.get("/health")
     def health() -> dict[str, str]:
