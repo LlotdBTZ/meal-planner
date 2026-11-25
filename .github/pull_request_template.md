@@ -13,6 +13,6 @@
 - [ ] Matches the design doc (or the design doc is updated in this PR)
 - [ ] `CHANGELOG.md` updated under `[Unreleased]` for user-visible changes
 - [ ] README / docs updated if user-facing or deployment changed
-- [ ] Dependency changes: `requirements.txt` regenerated (see CLAUDE.md)
+- [ ] Dependency changes: lock files regenerated with `scripts/lock-deps.sh`
 - [ ] Schema changes are additive migrations (rollback must keep working)
 - [ ] No secrets, `.env`, cookies, or state files; nothing personal (this repo is public)

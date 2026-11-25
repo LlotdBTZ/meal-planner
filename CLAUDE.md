@@ -19,14 +19,13 @@ pick meals for the week → combined grocery list → copy into iPhone Notes.
 ## Commands
 
 ```bash
-python3 -m venv .venv && .venv/bin/pip install --require-hashes -r requirements.txt \
-  && .venv/bin/pip install -e '.[dev]'                        # setup
+python3 -m venv .venv && .venv/bin/pip install --require-hashes -r requirements-dev.txt \
+  && .venv/bin/pip install --no-deps --no-build-isolation -e . \
+  && .venv/bin/pip install yt-dlp                             # setup
 .venv/bin/pytest -q --cov                                     # tests + coverage (≥95%)
 .venv/bin/ruff check . && .venv/bin/ruff format --check .     # lint + format check
 .venv/bin/mypy                                                # type check (app/)
-# lock runtime deps after changing pyproject.toml dependencies (add --upgrade to bump all):
-.venv/bin/uv pip compile pyproject.toml --universal --python-version 3.11 \
-  --generate-hashes --no-emit-package yt-dlp -o requirements.txt
+scripts/lock-deps.sh            # re-lock after changing pyproject.toml deps (--upgrade bumps all)
 .venv/bin/ruff format .                                       # auto-format
 .venv/bin/python -m app.main                                  # run locally (http://localhost:8080)
 terraform -chdir=infra/github fmt -check && terraform -chdir=infra/github validate
@@ -109,16 +108,18 @@ terraform -chdir=infra/github fmt -check && terraform -chdir=infra/github valida
 - Validate and escape all user input; Jinja autoescape stays on.
 - Redirect targets (e.g. login `next=`) must be local paths only.
 - `pyproject.toml` holds minimum versions; `requirements.txt` locks the exact
-  runtime versions (with hashes) that CI tests and the Pi installs. Change
-  them together. Review dependency bumps in their own PR. CI audits the lock
-  with pip-audit (also weekly); fix a reported vulnerability by bumping, not ignoring.
+  runtime versions (with hashes) that CI tests and the Pi installs, and
+  `requirements-dev.txt` locks those plus the dev tools (and setuptools) for CI
+  and local setup. Regenerate both with `scripts/lock-deps.sh` whenever
+  `pyproject.toml` changes; CI fails if they're stale. Review dependency bumps in their own PR. CI audits the lock
+  files with pip-audit (also weekly); fix a reported vulnerability by bumping, not ignoring.
 - GitHub Actions are pinned to full commit SHAs (Dependabot bumps them).
   Workflows get read-only tokens by default; never use `pull_request_target`.
   CI lints workflows with zizmor and actionlint; a zizmor `# zizmor: ignore[...]`
   needs a comment saying why it's safe. Dependabot waits 7 days before proposing
   a new release (cooldown); security updates aren't delayed.
-- yt-dlp is the exception: it's left out of the lock and auto-updates weekly
-  on the Pi because sites change often.
+- yt-dlp is the exception: it's left out of both locks and auto-updates weekly
+  on the Pi because sites change often. CI installs the latest release too.
 
 ## Code conventions
 - Type hints on public functions; `from __future__ import annotations`.

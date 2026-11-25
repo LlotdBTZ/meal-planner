@@ -5,10 +5,15 @@ All notable changes to this project are noted here. Versions follow
 
 ## [Unreleased]
 
+### Changed
+
+- Dev tools and the build backend are locked with hashes in `requirements-dev.txt`, and
+  `scripts/lock-deps.sh` regenerates both lock files. Dev setup in the README changed.
+
 ### Security
 
-- CI audits the locked runtime dependencies with pip-audit on every PR and push, and
-  weekly to catch newly published advisories. It's a required check on `main`.
+- CI audits the locked dependencies (runtime and dev tools) with pip-audit on every PR
+  and push, and weekly to catch newly published advisories. It's a required check on `main`.
 - Release tags (`v*`) are protected by repository rulesets: once pushed they can't be
   moved or deleted, and only repo admins can create them.
 - CI checks the GitHub Actions workflows with zizmor (security) and actionlint

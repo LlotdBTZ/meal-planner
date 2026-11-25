@@ -1,6 +1,7 @@
 name: Dependency audit
 
-# Checks the locked runtime deps (what the Pi installs) for known vulnerabilities.
+# Checks the locked deps (runtime, as the Pi installs them, plus the dev tools)
+# for known vulnerabilities.
 # The weekly run catches advisories published against versions we haven't changed.
 # yt-dlp isn't in the lock file (it auto-updates on the Pi), so it isn't audited.
 on:
@@ -27,7 +28,7 @@ jobs:
           python-version: "3.11" # matches the Pi
       - uses: pypa/gh-action-pip-audit@1220774d901786e6f652ae159f7b6bc8fea6d266 # v1.1.0
         with:
-          inputs: requirements.txt
+          inputs: requirements.txt requirements-dev.txt
           # Every package is pinned with hashes, so audit the list as-is
           # without resolving or installing anything.
           require-hashes: true
