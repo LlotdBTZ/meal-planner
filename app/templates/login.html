@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Log in · Meal Planner{% endblock %}
+{% block content %}
+<section class="login">
+  <h1>Meal Planner</h1>
+  <form method="post" action="/login">
+    <input type="hidden" name="next" value="{{ next }}">
+    <label for="password">Password</label>
+    <input id="password" name="password" type="password" autocomplete="current-password" required autofocus>
+    {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+    <button type="submit">Log in</button>
+  </form>
+</section>
+{% endblock %}
