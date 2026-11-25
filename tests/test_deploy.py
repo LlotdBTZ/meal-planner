@@ -35,7 +35,8 @@ def test_install_installs_every_unit_in_deploy():
 def test_every_timer_has_a_service():
     for timer in DEPLOY.glob("*.timer"):
         assert timer.with_suffix(".service").is_file(), timer.name
-        assert "OnCalendar" in _unit(timer)["Timer"]
+        schedule = _unit(timer)["Timer"]
+        assert "OnCalendar" in schedule or "OnUnitActiveSec" in schedule, timer.name
 
 
 def test_app_service_is_memory_capped_and_restarts():
@@ -44,3 +45,17 @@ def test_app_service_is_memory_capped_and_restarts():
     assert service["Restart"] == "on-failure"
     assert service["User"] == "mealplanner"
     assert service["ExecStart"].endswith("-m app.main")
+
+
+def test_autodeploy_runs_the_deployed_script_against_the_checkout():
+    service = _unit(DEPLOY / "meal-planner-autodeploy.service")
+    # The tagged, root-owned copy runs, never the checkout's working tree.
+    assert service["Service"]["ExecStart"] == "/opt/meal-planner/current/deploy/update.sh --auto"
+    assert service["Service"]["Environment"] == "MEAL_PLANNER_REPO=@REPO@"
+    assert "s|@REPO@|$REPO|g" in (DEPLOY / "install.sh").read_text()
+
+
+def test_only_the_autodeploy_unit_has_a_placeholder():
+    for unit in UNIT_FILES:
+        if unit.name != "meal-planner-autodeploy.service":
+            assert "@" not in unit.read_text(), unit.name

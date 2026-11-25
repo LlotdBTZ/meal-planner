@@ -5,6 +5,8 @@
 #   sudo deploy/install.sh
 #
 # Safe to run again: it only creates what is missing and never overwrites .env.
+# Afterwards new release tags on main deploy themselves (meal-planner-autodeploy.timer);
+# keep this checkout in place, since the timer fetches tags into it.
 set -euo pipefail
 
 PREFIX=/opt/meal-planner
@@ -17,6 +19,8 @@ UNITS=(
     meal-planner-backup.timer
     meal-planner-ytdlp-update.service
     meal-planner-ytdlp-update.timer
+    meal-planner-autodeploy.service
+    meal-planner-autodeploy.timer
 )
 
 die() { echo "error: $*" >&2; exit 1; }
@@ -55,11 +59,13 @@ fi
 
 echo "==> Installing systemd units"
 for unit in "${UNITS[@]}"; do
-    install -o root -g root -m 644 "$DEPLOY_DIR/$unit" "/etc/systemd/system/$unit"
+    sed "s|@REPO@|$REPO|g" "$DEPLOY_DIR/$unit" >"/etc/systemd/system/$unit"
+    chmod 644 "/etc/systemd/system/$unit"
 done
+TIMERS=(meal-planner-backup.timer meal-planner-ytdlp-update.timer meal-planner-autodeploy.timer)
 systemctl daemon-reload
-systemctl enable meal-planner.service meal-planner-backup.timer meal-planner-ytdlp-update.timer
-systemctl start meal-planner-backup.timer meal-planner-ytdlp-update.timer
+systemctl enable meal-planner.service "${TIMERS[@]}"
+systemctl start "${TIMERS[@]}"
 
 if [[ ${created_env:-0} == 1 ]]; then
     cat <<EOF

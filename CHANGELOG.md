@@ -3,6 +3,16 @@
 All notable changes to this project are noted here. Versions follow
 [Semantic Versioning](https://semver.org/); releases are tagged `vX.Y.Z` on `main`.
 
+## [Unreleased]
+
+### Added
+
+- Releases deploy themselves: the Pi checks for a new `vX.Y.Z` tag every 15 minutes,
+  deploys it, and rolls back to the previous release if the health check fails.
+- CI for a public repo: gitleaks secret scanning, shellcheck, CodeQL, Dependabot, actions
+  pinned to commit SHAs, and a release workflow that publishes GitHub Releases from this
+  file.
+
 ## [0.1.0] - 2026-11-24
 
 First release.

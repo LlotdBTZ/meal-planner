@@ -44,7 +44,20 @@ Open `http://<pi-address>:8080` and log in with `APP_PASSWORD`. Tip: in Pi-hole'
 `DATA_DIR` is ignored on the Pi; the service always uses `/var/lib/meal-planner`.
 After editing settings: `sudo systemctl restart meal-planner`.
 
-### Updating and rolling back
+### Updates deploy themselves
+
+Every 15 minutes the Pi checks GitHub for a new release tag (`vX.Y.Z` on `main`) and deploys
+it with `update.sh`: back up the database, install, restart, check `/health`. If the new
+release isn't healthy, the previous one is put back and that tag isn't tried again
+automatically. GitHub can't reach the Pi; the Pi only pulls.
+
+```bash
+journalctl -u meal-planner-autodeploy -n 20     # what the last check did
+sudo systemctl disable --now meal-planner-autodeploy.timer   # turn auto-deploy off
+```
+
+Keep the clone `install.sh` was run from (e.g. `~/meal-planner`): the timer fetches tags into
+it. To deploy or roll back by hand:
 
 ```bash
 cd ~/meal-planner && git fetch --tags origin
@@ -52,8 +65,9 @@ sudo deploy/update.sh          # newest vX.Y.Z tag on main
 sudo deploy/update.sh v0.1.0   # a specific tag, which is also how you roll back
 ```
 
-`update.sh` only deploys tags that are on `main`. It backs up the database first, restarts the
-app, and checks `/health`; if the check fails it prints the recent logs.
+Rolling back by hand puts the newer tags on a skip list (`/opt/meal-planner/skipped-tags`) so
+auto-deploy doesn't undo it; deploying a tag by hand takes it off the list. Releases that fail
+their health check land on the same list.
 
 ### Where things live
 
@@ -161,5 +175,15 @@ cp .env.example .env               # set APP_PASSWORD and SESSION_SECRET at leas
 .venv/bin/ruff check . && .venv/bin/ruff format --check .
 ```
 
-How we work (branches, commits, PRs, releases) is in [CLAUDE.md](CLAUDE.md). GitHub
+### Releasing
+
+1. In a PR: bump `version` in `pyproject.toml` and add a `## [X.Y.Z]` section to
+   `CHANGELOG.md`.
+2. After it merges: `git switch main && git pull && git tag -a vX.Y.Z -m vX.Y.Z && git push origin vX.Y.Z`.
+3. CI publishes a GitHub Release from the CHANGELOG, and the Pi deploys the tag within ~15
+   minutes.
+
+This repo is public: never commit secrets. CI scans every change with gitleaks and GitHub
+blocks pushes containing known key formats. How we work (branches, commits, PRs, releases)
+is in [CLAUDE.md](CLAUDE.md). GitHub
 repository settings are managed with Terraform in [infra/github/](infra/github/).

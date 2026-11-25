@@ -1,0 +1,14 @@
+[Unit]
+Description=Deploy the newest Meal Planner release tag, if there is one
+After=network-online.target
+Wants=network-online.target
+# Nothing to do until the first manual 'sudo deploy/update.sh'.
+ConditionPathExists=/opt/meal-planner/current/deploy/update.sh
+
+[Service]
+Type=oneshot
+# @REPO@ is replaced by install.sh with the path of your git checkout.
+Environment=MEAL_PLANNER_REPO=@REPO@
+# Runs the deployed (tagged, root-owned) copy of update.sh, not the checkout's.
+ExecStart=/opt/meal-planner/current/deploy/update.sh --auto
+Nice=10

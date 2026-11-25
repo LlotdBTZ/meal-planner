@@ -75,10 +75,18 @@ terraform -chdir=infra/github fmt -check && terraform -chdir=infra/github valida
 ### 7. Releases and deployment
 - Version in `pyproject.toml` follows SemVer; tag releases `vX.Y.Z` on `main`
   and note changes in `CHANGELOG.md`.
-- Deploy to the Pi only from a tagged `main` commit using `deploy/update.sh`.
+- Tagging is deploying: a pushed `vX.Y.Z` tag on `main` publishes a GitHub
+  Release (from `CHANGELOG.md`) and the Pi deploys it within ~15 minutes via
+  `deploy/update.sh --auto`, rolling back if `/health` fails. Only tag a
+  release you'd be happy to run, and bump `pyproject.toml` in the same PR as
+  the CHANGELOG entry.
+- Never deploy anything but a tagged `main` commit.
 - Database schema changes go through numbered migrations in `app/db.py`
   (`PRAGMA user_version`). Never edit a migration that has shipped; add a new one.
   Migrations must be safe on existing data (nightly backups exist, but don't rely on them).
+  They must also be additive (new tables/columns, no drops or renames), so the
+  previous release still runs on the migrated database: automatic rollback
+  depends on it. Remove old columns in a later release.
 
 ## Security and secrets
 - **The repo is public.** Treat every commit, PR, issue, and CI log as
