@@ -2,7 +2,7 @@
 
 Manages the `meal-planner` GitHub repository's settings as code: the repo
 itself, merge rules (squash only, delete branches after merge), security
-alerts, labels, and optional `main` branch protection.
+alerts, labels, optional `main` branch protection, and release-tag rulesets.
 
 The Raspberry Pi itself is **not** managed here. It's set up by
 `deploy/install.sh`, because Terraform isn't a good fit for configuring a
@@ -63,6 +63,19 @@ On (free for public repos): `main` needs a PR, linear history, and green
 `test (3.11)`, `test (3.13)`, `shellcheck`, `terraform`, `gitleaks`, and
 `pip-audit` checks. `enforce_admins = false` keeps an owner bypass for emergencies.
 If you rename a CI job, update `required_checks` in the same PR.
+
+## Release tags
+
+A `vX.Y.Z` tag on `main` deploys to the Pi, so two tag rulesets guard `v*`:
+
+- **Immutable:** nobody can move, force-push, or delete a release tag, so a
+  version always names the same commit. To fix a bad release, tag a new patch
+  version. Break-glass: set that ruleset's `enforcement` to `disabled`.
+- **Admins only:** only repo admins (the owner) can create release tags.
+  Collaborators, apps, and workflow tokens can't.
+
+These don't stop someone holding *your* credentials, since the owner can
+always create tags. Keep tokens fine-grained and short-lived.
 
 ## State
 
