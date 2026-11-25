@@ -1,3 +1,4 @@
+from importlib import metadata
 from pathlib import Path
 
 from fastapi.testclient import TestClient
@@ -6,11 +7,22 @@ from app.config import get_settings, load_dotenv
 from app.main import create_app
 
 
-def test_health_returns_ok(tmp_path):
+def test_health_returns_ok_and_installed_version(tmp_path):
     client = TestClient(create_app(get_settings({"DATA_DIR": str(tmp_path)})))
     resp = client.get("/health")
     assert resp.status_code == 200
-    assert resp.json() == {"status": "ok"}
+    # The version the deployed release was installed with, so a deploy can be
+    # confirmed from outside the Pi.
+    assert resp.json() == {"status": "ok", "version": metadata.version("meal-planner")}
+
+
+def test_health_version_unknown_when_not_installed(tmp_path, monkeypatch):
+    def not_installed(name: str) -> str:
+        raise metadata.PackageNotFoundError(name)
+
+    monkeypatch.setattr(metadata, "version", not_installed)
+    client = TestClient(create_app(get_settings({"DATA_DIR": str(tmp_path)})))
+    assert client.get("/health").json() == {"status": "ok", "version": "unknown"}
 
 
 def test_settings_defaults():

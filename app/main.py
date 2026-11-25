@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import AsyncIterator, Callable
 from contextlib import asynccontextmanager
+from importlib import metadata
 from typing import TYPE_CHECKING
 
 from fastapi import FastAPI, Request
@@ -19,6 +20,19 @@ from app.templating import STATIC_DIR
 if TYPE_CHECKING:  # the real pipeline imports yt-dlp; load it only when a job runs
     from app.extraction.pipeline import Pipeline
     from app.extraction.schema import RecipeDraft
+
+
+def _installed_version() -> str:
+    """The version this release was installed with (pyproject.toml), or "unknown".
+
+    The Pi pip-installs every release, so this names the release that's running
+    (including after a rollback). It's "unknown" only when run from an
+    uninstalled checkout.
+    """
+    try:
+        return metadata.version("meal-planner")
+    except metadata.PackageNotFoundError:
+        return "unknown"
 
 
 def _pipeline_runner(settings: Settings) -> jobs.Runner:
@@ -64,9 +78,13 @@ def create_app(settings: Settings | None = None, runner: jobs.Runner | None = No
     def _login_required(request: Request, exc: LoginRequired):
         return login_redirect(exc)
 
+    version = _installed_version()
+
     @app.get("/health")
     def health() -> dict[str, str]:
-        return {"status": "ok"}
+        # No login needed (deploy checks use it). The version lets anyone on the
+        # LAN/tailnet confirm which release is running.
+        return {"status": "ok", "version": version}
 
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
     app.include_router(auth_router)
