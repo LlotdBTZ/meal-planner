@@ -1,0 +1,52 @@
+name: Workflow lint
+
+# Checks the GitHub Actions workflows themselves: zizmor for security problems
+# (template injection, excessive permissions, leaked credentials, unpinned
+# actions, ...), actionlint for mistakes (bad syntax, expressions, and
+# shellcheck on `run:` scripts).
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  zizmor:
+    name: zizmor
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: zizmorcore/zizmor-action@1b4550e929643b8b26a62303c6bd64814271a4f1 # v0.9.2
+        with:
+          # Pinned so new audits don't break CI unannounced; bump by hand
+          # (Dependabot only bumps the action, not this input).
+          version: 1.33.1
+          # Fail this job on findings instead of uploading them to code
+          # scanning, so it works as a required check.
+          advanced-security: false
+          annotations: true
+
+  actionlint:
+    name: actionlint
+    runs-on: ubuntu-latest
+    env:
+      ACTIONLINT_VERSION: 1.7.12
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # The official release binary, verified against the release's checksum
+      # file. (Ubuntu runners ship shellcheck, which actionlint uses.)
+      - name: Install actionlint
+        run: |
+          base="https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}"
+          tarball="actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
+          curl -fsSLO "$base/$tarball"
+          curl -fsSL "$base/actionlint_${ACTIONLINT_VERSION}_checksums.txt" \
+            | grep " ${tarball}\$" | sha256sum -c -
+          tar xzf "$tarball" actionlint
+      - run: ./actionlint -color

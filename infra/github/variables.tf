@@ -30,7 +30,7 @@ variable "enable_branch_protection" {
 variable "required_checks" {
   description = "CI check names that must pass before merging to main."
   type        = list(string)
-  default     = ["test (3.11)", "test (3.13)", "shellcheck", "terraform", "gitleaks", "pip-audit"]
+  default     = ["test (3.11)", "test (3.13)", "shellcheck", "terraform", "gitleaks", "pip-audit", "zizmor", "actionlint"]
 }
 
 variable "labels" {
