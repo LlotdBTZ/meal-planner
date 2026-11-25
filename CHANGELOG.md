@@ -15,6 +15,8 @@ All notable changes to this project are noted here. Versions follow
   (correctness); both are required checks on `main`.
 - Dependabot waits 7 days before proposing a new dependency or action release, so a
   compromised release is usually caught first. Security updates aren't delayed.
+- OpenSSF Scorecard grades the repo's supply-chain practices weekly and on every push to
+  `main`, with results in GitHub code scanning.
 
 ## [0.3.0] - 2026-11-24
 

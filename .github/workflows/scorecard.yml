@@ -1,0 +1,45 @@
+name: Scorecard
+
+# OpenSSF Scorecard grades the repo against supply-chain practices (pinned
+# dependencies, token permissions, branch protection, ...). Results go to
+# Security > Code scanning. Not a PR check: it scores the repo, not a change.
+#
+# publish_results is off: publishing (for a public badge) needs an
+# id-token: write permission and sends results to OpenSSF's API.
+# Uses the default GITHUB_TOKEN, which can't read every branch-protection
+# setting, so that one check may score lower here than with a PAT. We keep
+# no secrets in Actions on purpose.
+#
+# No top-level env or defaults: Scorecard's workflow restrictions forbid them.
+on:
+  push:
+    branches: [main]
+  branch_protection_rule: # re-score when protection settings change
+  schedule:
+    - cron: "53 5 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  analysis:
+    name: scorecard
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write # upload the SARIF results to code scanning
+      actions: read # read workflow runs (CI-Tests, SAST checks)
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ossf/scorecard-action@23f22cd43608bae7a1f1fa2603d7314dee9538a5 # v2.6.0
+        with:
+          results_file: results.sarif
+          results_format: sarif
+          publish_results: false
+      - uses: github/codeql-action/upload-sarif@915412ff23e8b7659517e607487dbeae018f2934 # v4
+        with:
+          sarif_file: results.sarif
+          category: scorecard
