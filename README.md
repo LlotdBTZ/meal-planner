@@ -57,6 +57,7 @@ release isn't healthy, the previous one is put back and that tag isn't tried aga
 automatically. GitHub can't reach the Pi; the Pi only pulls.
 
 ```bash
+curl http://<pi>:8080/health                    # {"status":"ok","version":"0.3.1"}: what's running
 journalctl -u meal-planner-autodeploy -n 20     # what the last check did
 sudo systemctl disable --now meal-planner-autodeploy.timer   # turn auto-deploy off
 ```

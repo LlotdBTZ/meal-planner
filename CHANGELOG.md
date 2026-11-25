@@ -5,6 +5,11 @@ All notable changes to this project are noted here. Versions follow
 
 ## [Unreleased]
 
+### Added
+
+- `/health` reports the running version (`{"status": "ok", "version": "X.Y.Z"}`), so a
+  deploy can be confirmed from any device on the network without SSH.
+
 ## [0.3.1] - 2026-11-24
 
 CI, supply-chain, and developer-tooling hardening. The app, its runtime dependencies, and

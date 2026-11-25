@@ -263,6 +263,10 @@ immediately (after login, if needed).
   an `update.sh` that deploys a release tag (`vX.Y.Z` on `main`), backs up the
   database first, checks `/health`, and rolls back to the previous release if
   the check fails.
+- `/health` needs no login and returns `{"status": "ok", "version": "X.Y.Z"}`,
+  the version the running release was installed with, so a deploy (or a
+  rollback) can be confirmed from any device on the LAN/tailnet without SSH.
+  Exposing the version is acceptable because the app isn't on the public internet.
 - Releases deploy themselves: a systemd timer on the Pi checks GitHub every
   15 minutes and runs `update.sh` for a new tag. The Pi pulls; GitHub holds no
   deploy secrets and can't reach the Pi. A tag that failed is not retried
