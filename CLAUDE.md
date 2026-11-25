@@ -60,7 +60,8 @@ terraform -chdir=infra/github fmt -check && terraform -chdir=infra/github valida
 - Every change lands through a PR into `main`, squash-merged.
 - PR description: what and why, link to the plan task / issue, how it was
   tested, screenshots for UI changes, and any follow-ups.
-- CI must be green (tests, lint, format, terraform validate) before merge.
+- CI must be green (tests, lint, format, shellcheck, terraform validate,
+  gitleaks) before merge; branch protection on `main` enforces it.
 - Review the diff yourself before asking for review; for non-trivial
   changes, request a code review (e.g. `/code-review`).
 
@@ -80,12 +81,17 @@ terraform -chdir=infra/github fmt -check && terraform -chdir=infra/github valida
   Migrations must be safe on existing data (nightly backups exist, but don't rely on them).
 
 ## Security and secrets
+- **The repo is public.** Treat every commit, PR, issue, and CI log as
+  published forever. Use obviously fake values in tests and examples.
+- If a secret is ever pushed, rotate it first; rewriting history is not enough.
 - Secrets live only in `.env` on the Pi (see `.env.example`) and in the
   environment for Terraform (`GITHUB_TOKEN`). Never commit `.env`,
   `cookies.txt`, `*.tfstate`, `*.tfvars` with secrets, or API keys.
 - Validate and escape all user input; Jinja autoescape stays on.
 - Redirect targets (e.g. login `next=`) must be local paths only.
 - Pin dependency minimum versions; review dependency bumps in their own PR.
+- GitHub Actions are pinned to full commit SHAs (Dependabot bumps them).
+  Workflows get read-only tokens by default; never use `pull_request_target`.
 - yt-dlp is the exception: it auto-updates weekly on the Pi because sites
   change often.
 

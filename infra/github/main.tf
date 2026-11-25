@@ -36,6 +36,19 @@ resource "github_repository" "meal_planner" {
   # Code is pushed from the local repo after apply; don't create an initial commit.
   auto_init = false
 
+  # Free on public repos: GitHub blocks pushes that contain known secret formats.
+  dynamic "security_and_analysis" {
+    for_each = var.visibility == "public" ? [1] : []
+    content {
+      secret_scanning {
+        status = "enabled"
+      }
+      secret_scanning_push_protection {
+        status = "enabled"
+      }
+    }
+  }
+
   lifecycle {
     prevent_destroy = true
   }
@@ -46,8 +59,16 @@ resource "github_repository_vulnerability_alerts" "meal_planner" {
   enabled    = true
 }
 
+resource "github_repository_dependabot_security_updates" "meal_planner" {
+  repository = github_repository.meal_planner.name
+  enabled    = true
+
+  depends_on = [github_repository_vulnerability_alerts.meal_planner]
+}
+
 # Branch protection on private repos needs GitHub Pro/Team; on a free account
 # it only works for public repos. Toggle with var.enable_branch_protection.
+# enforce_admins = false leaves the owner a break-glass bypass.
 resource "github_branch_protection" "main" {
   count = var.enable_branch_protection ? 1 : 0
 
