@@ -89,6 +89,8 @@ terraform -chdir=infra/github fmt -check && terraform -chdir=infra/github valida
   release you'd be happy to run, and bump `pyproject.toml` in the same PR as
   the CHANGELOG entry.
 - Never deploy anything but a tagged `main` commit.
+- Release tags (`v*`) are immutable once pushed and only admins can create them
+  (tag rulesets in `infra/github/`). A bad release is fixed with a new patch tag.
 - Database schema changes go through numbered migrations in `app/db.py`
   (`PRAGMA user_version`). Never edit a migration that has shipped; add a new one.
   Migrations must be safe on existing data (nightly backups exist, but don't rely on them).

@@ -100,3 +100,55 @@ resource "github_issue_label" "labels" {
   color       = each.value.color
   description = each.value.description
 }
+
+# Release tags deploy: the Pi runs any vX.Y.Z tag on main (deploy/update.sh).
+# Free for public repos. Rulesets apply on top of branch protection.
+
+# Once pushed, a release tag can't be moved or deleted, by anyone, so a
+# deployed version always means the same commit. No bypass on purpose: to fix
+# a bad release, tag a new patch version. (Break-glass: disable this ruleset.)
+resource "github_repository_ruleset" "release_tags_immutable" {
+  name        = "release tags are immutable"
+  repository  = github_repository.meal_planner.name
+  target      = "tag"
+  enforcement = "active"
+
+  conditions {
+    ref_name {
+      include = ["refs/tags/v*"]
+      exclude = []
+    }
+  }
+
+  rules {
+    update           = true
+    deletion         = true
+    non_fast_forward = true
+  }
+}
+
+# Only repo admins (the owner) can create release tags, not collaborators,
+# apps, or workflow tokens.
+resource "github_repository_ruleset" "release_tags_create" {
+  name        = "only admins create release tags"
+  repository  = github_repository.meal_planner.name
+  target      = "tag"
+  enforcement = "active"
+
+  conditions {
+    ref_name {
+      include = ["refs/tags/v*"]
+      exclude = []
+    }
+  }
+
+  bypass_actors {
+    actor_id    = 5 # base repository role "admin"
+    actor_type  = "RepositoryRole"
+    bypass_mode = "always"
+  }
+
+  rules {
+    creation = true
+  }
+}
