@@ -66,8 +66,9 @@ terraform -chdir=infra/github fmt -check && terraform -chdir=infra/github valida
 - PR description: what and why, link to the plan task / issue, how it was
   tested, screenshots for UI changes, and any follow-ups.
 - CI must be green (tests + coverage, lint, format, mypy, shellcheck,
-  terraform validate, gitleaks, pip-audit, zizmor, actionlint; CodeQL reviewed) before merge; branch
-  protection on `main` enforces it.
+  terraform validate, gitleaks, pip-audit, zizmor, actionlint; CodeQL reviewed)
+  before merge; branch protection on `main` enforces it. OpenSSF Scorecard runs
+  on `main` and weekly (not a PR check); review its code-scanning alerts.
 - Security lint (`ruff` `S` rules) applies to `app/`. A `# noqa: S…` needs a
   comment saying why it's safe.
 - Review the diff yourself before asking for review; for non-trivial

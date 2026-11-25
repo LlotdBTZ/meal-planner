@@ -53,6 +53,9 @@ The repo is **public**. Secrets must never be committed (see `CLAUDE.md`):
   push, and weekly to catch newly published advisories.
 - CI checks the workflows themselves with **zizmor** (security: injection,
   permissions, credentials left in checkouts) and **actionlint** (correctness).
+- **OpenSSF Scorecard** grades the repo's supply-chain practices weekly and
+  on pushes to `main`; results are under Security > Code scanning. It isn't a
+  required check.
 - Real secrets live only in `/etc/meal-planner/.env` on the Pi. GitHub Actions
   holds no deploy secrets: the Pi pulls releases itself.
 
